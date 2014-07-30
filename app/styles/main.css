@@ -44,20 +44,15 @@ body {
 }
 
 .board {
-    border: solid 1px #aaa;
-    border-radius: 5px;
-    padding: 5px;
     margin: 15px;
-    width: 291px;
-    height: 291px;
+    width: 390px;
 }
 
 .cell {
     float: left;
-    width: 30px;
-    height: 30px;
-    margin: 1px 1px 0 0;
-    outline: none !important;
+    width: 38px;
+    height: 32px;
+    margin-right: 5px;
 }
 
 /* Responsive: Portrait tablets and up */
@@ -65,5 +60,74 @@ body {
     .container {
         max-width: 730px;
     }
+
+}
+
+
+.btn:focus, .btn.active:focus {
+  outline: none !important;
+}
+.btn3d {
+    transition: all .08s linear;
+    position: relative;
+    outline: medium none;
+    -moz-outline-style: none;
+    border: 0px;
+    margin-top: 11px;
+    top: 0;
+}
+.btn3d:focus {
+    outline: medium none;
+    -moz-outline-style: none;
+}
+.btn3d:active{
+    top: 7px;
+}
+.btn3d.btn-default {
+    box-shadow: 0 0 0 1px #ebebeb inset, 0 0 0 2px rgba(255, 255, 255, 0.15) inset, 0 6px 0 0 #adadad, 0 6px 0 1px rgba(0, 0, 0, 0.4), 0 6px 6px 1px rgba(0, 0, 0, 0.5);
+}
+.btn3d.btn-primary {
+    box-shadow: 0 0 0 1px #428bca inset, 0 0 0 2px rgba(255, 255, 255, 0.15) inset, 0 6px 0 0 #357ebd, 0 6px 0 1px rgba(0, 0, 0, 0.4), 0 6px 6px 1px rgba(0, 0, 0, 0.5);
+}
+.btn3d.btn-success {
+    box-shadow: 0 0 0 1px #5cb85c inset, 0 0 0 2px rgba(255, 255, 255, 0.15) inset, 0 6px 0 0 #4cae4c, 0 6px 0 1px rgba(0, 0, 0, 0.4), 0 6px 6px 1px rgba(0, 0, 0, 0.5);
+}
+.btn3d.btn-info {
+    box-shadow: 0 0 0 1px #5bc0de inset, 0 0 0 2px rgba(255, 255, 255, 0.15) inset, 0 6px 0 0 #46b8da, 0 6px 0 1px rgba(0, 0, 0, 0.4), 0 6px 6px 1px rgba(0, 0, 0, 0.5);
+}
+.btn3d.btn-warning {
+    box-shadow: 0 0 0 1px #f0ad4e inset, 0 0 0 2px rgba(255, 255, 255, 0.15) inset, 0 6px 0 0 #eea236, 0 6px 0 1px rgba(0, 0, 0, 0.4), 0 6px 6px 1px rgba(0, 0, 0, 0.5);
+}
+.btn3d.btn-danger {
+    box-shadow: 0 0 0 1px #c63702 inset, 0 0 0 2px rgba(255, 255, 255, 0.15) inset, 0 6px 0 0 #c24032, 0 6px 0 1px rgba(0, 0, 0, 0.4), 0 6px 6px 1px rgba(0, 0, 0, 0.5);
+}
+.btn3d:active.btn-default {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.btn3d:active.btn-primary {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.btn3d:active.btn-success {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.btn3d:active.btn-info {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.btn3d:active.btn-warning {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.btn3d:active.btn-danger {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+i.fa {
+    position: relative;
+    top: 2px;
+    left: -2px;
+    font-size: 1.3em;
+    text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.5);
+}
+
+i.fa.fa-flag {
 
 }
