@@ -2,9 +2,34 @@
 // generated on 2014-07-29 using generator-gulp-webapp 0.1.0
 
 var gulp = require('gulp');
+var vm = require('vm');
+var fs = require('fs');
+var merge = require('deeply');
 
 // load plugins
 var $ = require('gulp-load-plugins')();
+
+// Config
+var requireJsRuntimeConfig = vm.runInNewContext(fs.readFileSync('app/require.config.js') + '; require;');
+var requireJsOptimizerConfig = merge(requireJsRuntimeConfig, {
+        out: 'scripts.js',
+        baseUrl: './app',
+        name: 'scripts/startup',
+        paths: {
+            requireLib: 'bower_components/requirejs/require'
+        },
+        include: [
+            'requireLib'
+        ],
+        insertRequire: ['scripts/startup'],
+        bundles: {
+            // If you want parts of the site to load on demand, remove them from the 'include' list
+            // above, and group them into bundles here.
+            // 'bundle-name': [ 'some/module', 'another/module' ],
+            // 'another-bundle-name': [ 'yet-another-module' ]
+        }
+    });
+
 
 gulp.task('styles', function () {
     return gulp.src('app/styles/main.css')
@@ -14,9 +39,10 @@ gulp.task('styles', function () {
 });
 
 gulp.task('scripts', function () {
-    return gulp.src('app/scripts/**/*.js')
-        .pipe($.jshint())
-        .pipe($.jshint.reporter(require('jshint-stylish')))
+    return $.requirejsBundler(requireJsOptimizerConfig) //gulp.src('app/scripts/**/*.js')
+        //.pipe($.jshint())
+        //.pipe($.jshint.reporter(require('jshint-stylish')))
+        .pipe($.uglify({preserveComments: 'some'}))
         .pipe($.size());
 });
 
@@ -25,15 +51,15 @@ gulp.task('html', ['styles', 'scripts'], function () {
     var cssFilter = $.filter('**/*.css');
 
     return gulp.src('app/*.html')
-        .pipe($.useref.assets({searchPath: '{.tmp,app}'}))
-        .pipe(jsFilter)
-        .pipe($.uglify())
-        .pipe(jsFilter.restore())
-        .pipe(cssFilter)
-        .pipe($.csso())
-        .pipe(cssFilter.restore())
-        .pipe($.useref.restore())
-        .pipe($.useref())
+        //.pipe($.useref.assets({searchPath: '{.tmp,app}'}))
+        //.pipe(jsFilter)
+        //.pipe($.uglify())
+        //.pipe(jsFilter.restore())
+        //.pipe(cssFilter)
+        //.pipe($.csso())
+        //.pipe(cssFilter.restore())
+        //.pipe($.useref.restore())
+        //.pipe($.useref())
         .pipe(gulp.dest('dist'))
         .pipe($.size());
 });
