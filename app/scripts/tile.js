@@ -15,6 +15,9 @@ define(['jquery'], function($) {
 		// store the array of neighbours
 		var _neighbours = [];
 
+		// the total number of bombs around this tile
+		var _bombCount = 0;
+
 		// For the getters/setters below
 		var _isBomb = false;
 
@@ -141,7 +144,11 @@ define(['jquery'], function($) {
 
 		var isEmpty = function() {
 			return bombCount() === 0;
-		}
+		};
+
+		var add_neighbour = function(n) {
+			_neighbours.push(n);
+		};
 
 
 		// Attach the right click event to the handler
@@ -159,7 +166,9 @@ define(['jquery'], function($) {
 
 			reveal: reveal,
 
-			getContentHtml: get_content_html
+			getContentHtml: get_content_html,
+
+			addNeighbour: add_neighbour
 		}
 	}
 });

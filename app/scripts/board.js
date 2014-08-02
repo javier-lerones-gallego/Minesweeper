@@ -85,8 +85,12 @@ define(['jquery', 'scripts/tile', 'scripts/tools'], function($, tile, tools) {
 
 			// traverse the board one more time and add the neighbours to each tile
 			for(var tileIndex = 0, lastTile = _tiles.length; tileIndex < lastTile; tileIndex += 1) {
-				
-			}
+				var neighbours = tools.calculateNeighbours(tileIndex, options);
+
+				for(var nindex = 0, nlen = neighbours.length; nindex < nlen; nindex++) {
+					_tiles[tileIndex].addNeighbour(_tiles[nindex]);
+				};
+			};
 		};
 
 
