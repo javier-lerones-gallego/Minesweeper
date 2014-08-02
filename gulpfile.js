@@ -6,6 +6,9 @@ var vm = require('vm');
 var fs = require('fs');
 var merge = require('deeply');
 
+// for gulp-devtools in chrome
+module.exports = gulp;
+
 // load plugins
 var $ = require('gulp-load-plugins')();
 
