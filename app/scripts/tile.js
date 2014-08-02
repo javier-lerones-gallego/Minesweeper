@@ -3,6 +3,7 @@ define(['jquery'], function($) {
 	return function(element, board) {
 		// Private module vars and methods
 		var $element = element; // This will point to the HTML button element
+		var $debugelement;
 		var _board = board; 	// A reference to the board game to avoid doing pub/sub
 
 		// store the state of right and left buttons, to know when both are clicked at the same time
@@ -11,6 +12,7 @@ define(['jquery'], function($) {
 
 		// store the state of the tile, active, flag, or question
 		var _state = 'active';
+		var _revealed = false;
 
 		// store the array of neighbours
 		var _neighbours = [];
@@ -37,7 +39,7 @@ define(['jquery'], function($) {
 				_leftMouseDown = false;
 				_rightMouseDown = false;
 			} else if(_leftMouseDown) {
-
+				left_click();
 			} else if(_rightMouseDown) {
 				// console.log('Right button click detected', e);
 				right_click();
@@ -55,9 +57,21 @@ define(['jquery'], function($) {
 				// Game Over, notify the board
 				_board.game_over();
 			} else {
-				// if not a bomb, what do we do?
-				// TODO: Logic here
+				// if not a bomb, reveal it and trigger the neighbour reveal
+				reveal();
 			}
+		};
+
+		var debug_mouseover = function() {
+			for(var i = 0, l = _neighbours.length; i < l; i++) {
+				_neighbours[i].getDebugElement().removeClass('btn-primary').addClass('btn-warning');
+			};
+		};
+
+		var debug_mouseout = function() {
+			for(var i = 0, l = _neighbours.length; i < l; i++) {
+				_neighbours[i].getDebugElement().removeClass('btn-warning').addClass('btn-primary');
+			};
 		};
 
 		var right_click = function() {
@@ -77,15 +91,35 @@ define(['jquery'], function($) {
 			return $element;
 		};
 
-		var reveal = function() {
+		var getDebugElement = function() {
+			return $debugelement;
+		};
 
+		var reveal = function() {
+			if(!_revealed) {
+				if(_bombCount === 0) {
+					// change to white, and empty
+					$element.removeClass('btn-primary').addClass('btn-default factive disabled');
+					// Mark it as revealed BEFORE invoking the neighbours so the neighbours events don't come back here
+					_revealed = true;
+					// Trigger the neighbours
+					for(var i = 0, l = _neighbours.length; i < l; i++) {
+						_neighbours[i].reveal();
+					}
+				} else {
+					// change to white with the bomb number inside it, and don't trigger the neighbours
+					$element.removeClass('btn-primary').addClass('btn-default factive disabled').html(_bombCount);
+					// Mark it as revealed so the neighbours events don't come back here
+					_revealed = true;
+				}
+			}
 		};
 
 		var get_content_html = function() {
 			if(isBomb()) {
 				return '*';
 			} else {
-				return bombCount();
+				return getBombCount();
 			}
 		};
 
@@ -117,9 +151,8 @@ define(['jquery'], function($) {
 			}
 		}
 
-		var isBomb = function(val) {
-			if(val) _isBomb = val;
-			else return _isBomb;
+		var isBomb = function() {
+			return _isBomb;
 		};
 
 		var isActive = function() {
@@ -134,41 +167,74 @@ define(['jquery'], function($) {
 
 		};
 
-		var bombCount = function() {
-			var count = 0;
-			for(var index = 0, len = _neighbours.length; index < len; index++) {
-				if(_neighbours[index].isBomb()) count += 1;
-			}
-			return count;
+		var setBomb = function(val) {
+			_isBomb = val;
 		};
 
+		var setFlag = function(val) {
+
+		};
+
+		var setQuestion = function(val) {
+
+		};
+
+		var getBombCount = function() {
+			return _bombCount;
+		};
+
+		var refreshBombCount = function() {
+			_bombCount = 0;
+			for(var index = 0, len = _neighbours.length; index < len; index++) {
+				if(_neighbours[index].isBomb()) {
+					_bombCount += 1;
+				}
+			}
+		}
 		var isEmpty = function() {
 			return bombCount() === 0;
 		};
 
 		var add_neighbour = function(n) {
 			_neighbours.push(n);
+			refreshBombCount();
+		};
+
+		var add_debug_element = function(de) {
+			$debugelement = de;
+
+			$debugelement.on('mouseover', debug_mouseover);
+			$debugelement.on('mouseout', debug_mouseout);
 		};
 
 
 		// Attach the right click event to the handler
 		$element.on('mousedown', mouse_down);
-		$element.on('mouseup', mouse_up);  
+		$element.on('mouseup', mouse_up);
 
 
 		// Return the module
 		return {
 			getElement: getElement,
+			getDebugElement: getDebugElement,
+
+			element: $element,
 
 			isBomb: isBomb,
 			isFlag: isFlag,
 			isQuestion: isQuestion,
 
+			setBomb: setBomb,
+			setFlag: setFlag,
+			setQuestion: setQuestion,
+
 			reveal: reveal,
 
 			getContentHtml: get_content_html,
 
-			addNeighbour: add_neighbour
+			addNeighbour: add_neighbour,
+
+			addDebugElement: add_debug_element
 		}
 	}
 });

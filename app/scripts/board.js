@@ -24,15 +24,35 @@ define(['jquery', 'scripts/tile', 'scripts/tools'], function($, tile, tools) {
 			if(enable) {
 				for(var index = 0, len = _tiles.length; index < len; index++) {
 					// Create a new jqueryfied button for the UI
-					var $debugtile = $('<button>').attr('type', 'button').addClass("btn btn-primary cell disabled").html(_tiles[index].getContentHtml());
+					var $debugtile = $('<button>').attr('type', 'button').addClass("btn btn-primary cell").html(_tiles[index].getContentHtml());
 
 					// append the tile to the board
-					debug.append($debugtile); 
+					debug.append($debugtile);
+
+					// add the debugelement to the tile object
+					_tiles[index].addDebugElement($debugtile);
 				}
 
 				$debug.append(createClearFloat());
 			}
 		};
+
+
+		var _randomizeBombs = function(options) {
+			var attempts = 0;
+			var bombsAdded = 0;
+			var totalTiles = options.rows * options.length;
+			while(bombsAdded < options.bombs && attempts < _maxAttemptsToGetBombIndex) {
+				// Get a random index
+				var newIndex = tools.randomNumber(0, totalTiles - 1);
+				// If it doesn't exist, add it to the indexes
+				if(!_bombsIndexes[newIndex]) {
+					_bombsIndexes[newIndex] = newIndex; // Keep the value too for easier lookups
+					bombsAdded += 1;
+				}
+				attempts += 1; // Because having an operator just for the number 1 case is STUPID
+			}
+		}
 
 		///
 		/// Creates a new board
@@ -40,23 +60,13 @@ define(['jquery', 'scripts/tile', 'scripts/tools'], function($, tile, tools) {
 		var generate = function(options) {
 			// keep this in a var to avoid recalculating constantly
 			var totalTiles = options.rows * options.length;
+
 			// first randomize the bombs
 			// options.bombs: count of total bombs, cannot be greater than the total amount
 			if(options.bombs >= totalTiles) {
 				throw new Error("Oops, can't create more bombs than tiles in the board.")
 			} else {
-				var attempts = 0;
-				var bombsAdded = 0;
-				while(bombsAdded < options.bombs && attempts < _maxAttemptsToGetBombIndex) {
-					// Get a random index
-					var newIndex = tools.randomNumber(0, totalTiles - 1);
-					// If it doesn't exist, add it to the indexes
-					if(!_bombsIndexes[newIndex]) {
-						_bombsIndexes[newIndex] = newIndex; // Keep the value too for easier lookups
-						bombsAdded += 1;
-					}
-					attempts += 1; // Because having an operator just for the number 1 case is STUPID
-				}
+				_randomizeBombs(options);
 			}
 
 			// Now generate the tiles, and if the index has a bomb, mark it as bomb
@@ -70,12 +80,12 @@ define(['jquery', 'scripts/tile', 'scripts/tools'], function($, tile, tools) {
 				// Instantiate a new tile with the jqueryfied button
 				var newTile = new tile($tile);
 
-				// append the tile to the board
-				$element.append($tile);
-
 				// Is it a bomb?
 				if(_bombsIndexes[index])
-					newTile.isBomb(true);
+					newTile.setBomb(true);
+
+				// append the tile to the board
+				$element.append($tile);
 
 				// Add the tile to the tiles array
 				_tiles.push(newTile);
@@ -88,7 +98,7 @@ define(['jquery', 'scripts/tile', 'scripts/tools'], function($, tile, tools) {
 				var neighbours = tools.calculateNeighbours(tileIndex, options);
 
 				for(var nindex = 0, nlen = neighbours.length; nindex < nlen; nindex++) {
-					_tiles[tileIndex].addNeighbour(_tiles[nindex]);
+					_tiles[tileIndex].addNeighbour(_tiles[neighbours[nindex]]);
 				};
 			};
 		};

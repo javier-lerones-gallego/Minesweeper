@@ -10,21 +10,13 @@ define(['jquery'], function($) {
 
 		var totalTiles = options.rows * options.length;
 
-		// tiles on top: index - (options.length + 1), index - (options.length), index - (options.length - 1)
-		// tiles before and after: index - 1, index + 1
-		// tiles below: index + (options.length - 1), index + options.length, index + (options.length + 1)
-
-		// corner cases:
+		// special cases:
 		// four corners only have 3 neighbours
-		// also edge rows don't have all neighbours
-		// top row: from 1 to options.length - 2 (excluded corners)
-		// bottom row: from (totalTiles - options.length + 1)  to (totalTiles - 2) (excluded corners)
-		// left colum: tileIndex % options.length = 0 && tileIndex != 0 && tileIndex != (totalTiles - options.length) (excluded corners)
-		// right column: tileIndex % options.length = (options.length - 1) && tileIndex != options.length - 1 && tileIndex != totalTiles - 1 (excluded corners)
+		// also edge rows only have 5 neighbours
 
 		var topLeftCorner = 0;
 		var topRightCorner = options.length - 1;
-		var bottomLeftCorner = totalTiles - options.length - 1;
+		var bottomLeftCorner = totalTiles - options.length;
 		var bottomRightCorner = totalTiles - 1;
 
 		if(index === topLeftCorner) {
@@ -50,7 +42,7 @@ define(['jquery'], function($) {
 			neighbours.push(index + options.length);
 			neighbours.push(index + options.length - 1);
 			neighbours.push(index + options.length + 1);
-		} else if(index > totalTiles - options.length + 1 && index < totalTiles - 1) {
+		} else if(index > totalTiles - options.length && index < totalTiles - 1) {
 			// bottom row
 			neighbours.push(index + 1);
 			neighbours.push(index - 1);
@@ -64,7 +56,7 @@ define(['jquery'], function($) {
 			neighbours.push(index + 1);
 			neighbours.push(index + options.length);
 			neighbours.push(index + options.length + 1);
-		} else if(index % (options.length - 1) === 0 && index !== options.length - 1 && index !== totalTiles - 1) {
+		} else if(index % options.length === (options.length - 1) && index !== options.length - 1 && index !== totalTiles - 1) {
 			// right column
 			neighbours.push(index - options.length - 1);
 			neighbours.push(index - options.length);
