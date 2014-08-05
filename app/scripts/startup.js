@@ -1,22 +1,36 @@
 
-define(['jquery', 'scripts/tile', 'scripts/board', 'bootstrap'], function($, tile, board) {
+define(['jquery', 'scripts/game', 'scripts/square', 'bootstrap'], function($, game, square) {
 	// On document.ready just in case
 	$(function() {
 		// Cancel the context menu
 		document.oncontextmenu = function() { return false; };
 
-		// Create a new board object
-		var theBoard = new board($('div.board'), $('div.debug'));
+		// Create a new game object
+		var theBoard = new game($('div.board'), $('div.debug'));
 
-		// Generate the board
-		theBoard.generate({ rows: 9, length: 9, bombs: 10 });
+		// Attach the new board event to the new game buttons
+		$('#neweasy').on('click', function() {
+			// Generate the board
+			theBoard.createEasy();
+			// Show the board, the timer, and the option buttons
+			$('#gameboard').show();
+			// Hide the New Game Buttons
+			$('#newgamebuttons').hide();
+			// Draw the board
+			theBoard.show();
+		});
 
-		// draw the debug board?
-		theBoard.debug(true); 
+		$('#newmedium').on('click', function() {
 
+		});
 
-		// Attach the new board event to the new game button
+		$('#newexpert').on('click', function() {
+		});
 
+		// Attach the debug method to the checkbox
+		$('#debug').on('click', function(event) {
+			theBoard.showDebug();
+		});
 
 		// That's it??
 	});

@@ -28,118 +28,36 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
 
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6">
-                    <h4>Welcome</h4>
-                    <p>Click on the button to start a new game, enjoy!</p>
-                    <button type="button" class="btn btn-danger">New Game</button>
-                </div>
-            </div>
+        <h2>Minesweeper</h2>
+        <div id="newgamebuttons">
+            <p>
+                <h4>Start a New Game</h4>
+                <button id="neweasy" type="button" class="btn btn-success">Easy</button>
+                <button id="newmedium" type="button" class="btn btn-warning">Medium</button>
+                <button id="newexpert" type="button" class="btn btn-danger">Expert</button>
+            </p>
+        </div>
+
+        <div id="gameboard" style="display:none;">
+            <p>
+                <span id="gamedifficulty">Easy</span> - <span id="minesleft">10</span> Mines
+            </p>
 
             <div class="board">
-
-
-                <!--
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-warning cell"><i class="fa fa-flag"></i></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d btn btn-warning cell"><i class="fa fa-flag"></i></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-warning cell"><i class="fa fa-flag"></i></button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d btn btn-default cell "></button>
-                <button type="button" class="btn3d btn btn-default cell"></button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d btn btn-info cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d btn btn-default cell"></button>
-                <button type="button" class="btn3d btn btn-default cell"></button>
-                <button type="button" class="btn3d btn btn-default cell"></button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d btn btn-warning cell"><i class="fa fa-flag"></i></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d btn btn-default cell"></button>
-                <button type="button" class="btn3d btn btn-default cell"></button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-warning cell"><i class="fa fa-flag"></i></button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d disabled btn btn-primary cell">1</button>
-                <button type="button" class="btn3d btn btn-warning cell"><i class="fa fa-flag"></i></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-success cell"><i class="fa fa-question-circle"></i></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-danger cell"><i class="fa fa-bomb"></i></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-                <button type="button" class="btn3d btn btn-primary cell"></button>
-
-                -->
             </div>
 
             <div class="debug">
             </div>
 
-            <div class="footer">
-                <p>A Game by Javier Lerones</p>
-            </div>
+            <p>
+                <button id="newgame" type="button" class="btn btn-default">New Game</button>
+                <button id="debug" type="button" class="btn btn-warning">Show Debug</button>
+            </p>
+
+        </div>
+
+        <div class="footer">
+            <p>A Game by Javier Lerones</p>
         </div>
 
 </body>
