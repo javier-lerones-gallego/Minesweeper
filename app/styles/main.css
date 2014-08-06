@@ -9,6 +9,7 @@
 body {
     padding-top: 20px;
     padding-bottom: 20px;
+    margin: 15px;
 }
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
@@ -44,20 +45,23 @@ body {
 }
 
 .board {
-    margin: 15px;
-    /* easy: 390px; medium: 694px; expert: 1300px; */
+
 }
 .easy {
     width: 390px;
+    color: #00CA00;
 }
 .medium {
     width: 694px;
+    color: #EA4D00;
 }
 .expert{
     width: 1300px;
+    color: #CA0000;
 }
 .debug {
-    margin: 15px;
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 .cell {
@@ -76,6 +80,17 @@ body {
 
 }
 
+
+#gameboard > p > span {
+    font-size: 1.3em;
+}
+#gamedifficulty {
+    font-weight: bold;
+}
+#minesleft {
+    color: #00CA00;
+    font-weight: bold;
+}
 
 .btn:focus, .btn.active:focus {
   outline: none !important;

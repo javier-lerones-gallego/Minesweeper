@@ -1,5 +1,6 @@
 
 define(['jquery'], function($) {
+
 	return function(game) {
 		// Private module vars and methods
 		var $button_element = null; // This will point to the HTML button element
@@ -184,13 +185,10 @@ define(['jquery'], function($) {
 
 		var setFlag = function() {
 			_state = 'flag';
-			console.log(game);
-			game.addFlag();
 		};
 
 		var setQuestion = function() {
 			_state = 'question';
-			game.removeFlag();
 		};
 
 		var setActive = function() {
@@ -222,10 +220,11 @@ define(['jquery'], function($) {
 		};
 
 
-		// Attach the right click event to the handler
-		get_element().on('mousedown', mouse_down);
-		get_element().on('mouseup', mouse_up);
-
+		var add_mouse_events = function() {
+			// Attach the right click event to the handler
+			get_element().on('mousedown', mouse_down);
+			get_element().on('mouseup', mouse_up);
+		};
 
 		// Return the module
 		return {
@@ -247,7 +246,9 @@ define(['jquery'], function($) {
 
 			addNeighbour: add_neighbour,
 
-			addDebugElement: add_debug_element
+			addDebugElement: add_debug_element,
+
+			addMouseEvents: add_mouse_events
 		}
 	}
 });

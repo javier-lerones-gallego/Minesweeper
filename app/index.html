@@ -20,7 +20,7 @@
 
         <!-- build:js -->
         <script src="require.config.js"></script>
-        <script data-main="scripts/startup" src="bower_components/requirejs/require.js"></script>
+        <script data-main="scripts/main" src="bower_components/requirejs/require.js"></script>
         <!-- endbuild -->
     </head>
     <body>
@@ -40,7 +40,11 @@
 
         <div id="gameboard" style="display:none;">
             <p>
-                <span id="gamedifficulty">Easy</span> - <span id="minesleft">10</span> Mines
+                <span>Difficulty: </span>
+                <span id="gamedifficulty" class="easy">Easy</span>
+                <span> - </span>
+                <span id="minesleft">10</span>
+                <span> Mines</span>
             </p>
 
             <div class="board">

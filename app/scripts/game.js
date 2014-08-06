@@ -1,10 +1,10 @@
 define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools) {
 
-	return function(element, debug) {
+	return function() {
 		var self = this;
 
-		var $board_container = element;
-		var $debug_container = debug;
+		var $board_container = null;
+		var $debug_container = null;
 
 		var _board_options = {}; // store the options here
 
@@ -24,6 +24,10 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 		// started: generated and started
 		// won: generated and finished correctly
 		// lost: generated and finished incorrectly
+
+		var set_element = function(element) {
+
+		}
 
 		var get_element = function() {
 			return $board_container;
@@ -118,6 +122,8 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 			for(var index = 0, last = _board_options.rows * _board_options.length; index < last; index++) {
 				// Instantiate a new square with the jqueryfied button
 				var newSquare = new square();
+
+				newSquare.addMouseEvents();
 
 				// Is it a bomb?
 				if(_mineIndexes[index])

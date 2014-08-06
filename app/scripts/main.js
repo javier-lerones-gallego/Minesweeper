@@ -1,5 +1,5 @@
 
-define(['jquery', 'scripts/game', 'scripts/square', 'bootstrap'], function($, game, square) {
+define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], function($, game, square, ui) {
 	// On document.ready just in case
 	$(function() {
 		// Cancel the context menu
