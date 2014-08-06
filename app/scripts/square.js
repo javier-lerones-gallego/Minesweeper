@@ -92,10 +92,10 @@ define(['jquery'], function($) {
 		};
 
 		var remove_focus = function() {
-			get_element().blur();
+			get_square().blur();
 		};
 
-		var get_element = function() {
+		var get_square = function() {
 			if(!$button_element)
 				$button_element = $('<button>').attr('type', 'button').addClass("btn3d btn btn-primary cell");
 
@@ -110,7 +110,7 @@ define(['jquery'], function($) {
 			if(!_revealed) {
 				if(_bomb_count === 0) {
 					// change to white, and empty
-					get_element().removeClass('btn-primary').addClass('btn-default active disabled');
+					get_square().removeClass('btn-primary').addClass('btn-default active disabled');
 					// Mark it as revealed BEFORE invoking the neighbours so the neighbours events don't come back here
 					_revealed = true;
 					// Trigger the neighbours
@@ -120,7 +120,7 @@ define(['jquery'], function($) {
 				} else {
 					// change to white with the bomb number inside it, and don't trigger the neighbours
 					var $bomb_count_element = $('<span>').addClass('_' + _bomb_count).html(_bomb_count);
-					get_element().removeClass('btn-primary').addClass('btn-default active disabled').html($bomb_count_element);
+					get_square().removeClass('btn-primary').addClass('btn-default active disabled').html($bomb_count_element);
 					// Mark it as revealed so the neighbours events don't come back here
 					_revealed = true;
 				}
@@ -147,19 +147,19 @@ define(['jquery'], function($) {
 		var refresh_tile = function() {
 			if(isActive()) {
 				// Remove the <i> inside
-				get_element().find('i').remove();
+				get_square().find('i').remove();
 				// Change class to btn-primary
-				get_element().removeClass('btn-danger btn-default btn-warning btn-success disabled').addClass('btn-primary');
+				get_square().removeClass('btn-danger btn-default btn-warning btn-success disabled').addClass('btn-primary');
 			}  else if(isFlag()) {
 				// Add the <i> inside // <i class="fa fa-flag"></i>
 				// Change class to btn-warning
 				var flag = $('<i>').addClass('fa fa-flag');
-				get_element().removeClass('btn-danger btn-default btn-primary btn-success disabled').append(flag).addClass('btn-warning');
+				get_square().removeClass('btn-danger btn-default btn-primary btn-success disabled').append(flag).addClass('btn-warning');
 			}  else if(_state === 'question') {
 				// Change the <i> inside to be question
-				get_element().find('i').removeClass('fa-flag').addClass('fa-question-circle');
+				get_square().find('i').removeClass('fa-flag').addClass('fa-question-circle');
 				// Change class to btn-warning
-				get_element().removeClass('btn-danger btn-default btn-primary btn-warning disabled').addClass('btn-success');
+				get_square().removeClass('btn-danger btn-default btn-primary btn-warning disabled').addClass('btn-success');
 			}
 		}
 
@@ -185,10 +185,12 @@ define(['jquery'], function($) {
 
 		var setFlag = function() {
 			_state = 'flag';
+			get_square().trigger('squarestatechange', { state: _state } );
 		};
 
 		var setQuestion = function() {
 			_state = 'question';
+			get_square().trigger('squarestatechange', { state: _state } );
 		};
 
 		var setActive = function() {
@@ -215,22 +217,25 @@ define(['jquery'], function($) {
 		var add_debug_element = function(de) {
 			$debug_element = de;
 
-			get_element().on('mouseover', debug_mouseover);
-			get_element().on('mouseout', debug_mouseout);
+			get_square().on('mouseover', debug_mouseover);
+			get_square().on('mouseout', debug_mouseout);
 		};
 
 
 		var add_mouse_events = function() {
 			// Attach the right click event to the handler
-			get_element().on('mousedown', mouse_down);
-			get_element().on('mouseup', mouse_up);
+			get_square().on('mousedown', mouse_down);
+			get_square().on('mouseup', mouse_up);
+		};
+
+		// Event handlers and listeners
+		var on_state_change = function(handler) {
+			get_square().on('squarestatechange', handler);
 		};
 
 		// Return the module
 		return {
-			getElement: get_element,
-			getDebugElement: get_debug_element,
-			debugHighlight: debug_highlight,
+			getSquare: get_square,
 
 			isBomb: isBomb,
 			isFlag: isFlag,
@@ -246,7 +251,7 @@ define(['jquery'], function($) {
 
 			addNeighbour: add_neighbour,
 
-			addDebugElement: add_debug_element,
+			onStateChange: on_state_change,
 
 			addMouseEvents: add_mouse_events
 		}

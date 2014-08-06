@@ -2,36 +2,40 @@
 define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], function($, game, square, ui) {
 	// On document.ready just in case
 	$(function() {
-		// Cancel the context menu
+		// Diable the context menu
 		document.oncontextmenu = function() { return false; };
 
 		// Create a new game object
-		var theBoard = new game($('div.board'), $('div.debug'));
+		var theGame = new game();
+
+		theGame.setBoard($('div.board'));
+
+		// Attach the mine count listener to the game object event
+		theGame.onFlagCountChange(function(event, args) {
+			$('#minesleft').html(args.count);
+		});
 
 		// Attach the new board event to the new game buttons
 		$('#neweasy').on('click', function() {
 			// Generate the board
-			theBoard.createEasy();
+			theGame.createEasy();
+			// Show the difficulty level
+			$('#gamedifficulty').html(theGame.getDifficulty())
 			// Show the board, the timer, and the option buttons
 			$('#gameboard').show();
 			// Hide the New Game Buttons
 			$('#newgamebuttons').hide();
 			// Draw the board
-			theBoard.show();
+			theGame.show();
 		});
 
 		$('#newmedium').on('click', function() {
-
 		});
 
 		$('#newexpert').on('click', function() {
 		});
 
-		// Attach the debug method to the checkbox
-		$('#debug').on('click', function(event) {
-			theBoard.showDebug();
-		});
-
-		// That's it??
+		// Do the unthinkable!
+		window.debug_board = theGame.debug;
 	});
 });

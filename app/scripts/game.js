@@ -1,18 +1,18 @@
-define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools) {
+define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, ui, square, tools) {
 
 	return function() {
 		var self = this;
 
 		var $board_container = null;
-		var $debug_container = null;
-
 		var _board_options = {}; // store the options here
 
 		var _squares = [];
 		var _mineIndexes = {};
 
+		var _difficulty = 'Easy';
+
 		// Get out of the while loop condition, avoid endless loops due to random()
-		var _max_attempts_random_mine_index = 1000;
+		var MAXATTEMPTSRANDOMMINEINDEX = 1000;
 
 		// Keep an index with the number of flags on the board
 		var _flags = 0;
@@ -25,68 +25,46 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 		// won: generated and finished correctly
 		// lost: generated and finished incorrectly
 
-		var set_element = function(element) {
+		var set_board = function(element) {
+			$board_container = element;
+		};
 
-		}
-
-		var get_element = function() {
+		var get_board = function() {
 			return $board_container;
 		};
-		var get_debug_element = function() {
-			return $debug_container;
+
+		var _on_square_state_change = function(event, args) {
+			if(args.state === 'flag') add_flag();
+			else if(args.state === 'question') remove_flag();
 		};
 
 		var add_flag = function() {
 			_flags += 1;
-			$('#minesleft').html(_flags);
+			get_board().trigger('onminecountchange', { count: _board_options.mines - _flags });
 		};
 
 		var remove_flag = function() {
 			_flags -= 1;
-			$('#minesleft').html(_flags);
+			get_board().trigger('onminecountchange', { count: _board_options.mines - _flags });
 		};
 
 		var _create_clear_float = function() {
 			return $('<div>').css('clear', 'both');
 		};
 
-		var draw_debug = function() {
-			for(var index = 0, len = _squares.length; index < len; index++) {
-				// Create a new jqueryfied button for the UI
-				var $debug_square = $('<button>').attr('type', 'button').addClass("btn btn-primary cell").html(_squares[index].getContentHtml());
-
-				// append the square to the board
-				$debug_container.append($debug_square);
-
-				// add the debugelement to the square object
-				_squares[index].addDebugElement($debug_square);
-			}
-			// add the float clear at the end
-			$debug_container.append(_create_clear_float());
-		};
-
-		var hide_debug = function() {
-			$debug_container.empty();
-		};
-
 		var _adjust_board_width = function() {
-			// 43.33 pixes per square
 			switch(_board_options.length) {
 				case 9:
 					$board_container.removeClass('medium expert').addClass('easy');
-					$debug_container.removeClass('medium expert').addClass('easy');
 					break;
 				case 16:
 					$board_container.removeClass('easy expert').addClass('medium');
-					$debug_container.removeClass('easy expert').addClass('medium');
 					break;
 				case 30:
 					$board_container.removeClass('easy medium').addClass('expert');
-					$debug_container.removeClass('easy medium').addClass('expert');
 					break;
 				default:
 					$board_container.removeClass('medium expert').addClass('easy');
-					$debug_container.removeClass('medium expert').addClass('easy');
 					break;
 			}
 		};
@@ -98,7 +76,7 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 			var minesAdded = 0;
 			// Do either until we randomize the total number of mines,
 			// or until we go over the maximum number of attempts
-			while(minesAdded < _board_options.mines && attempts < _max_attempts_random_mine_index) {
+			while(minesAdded < _board_options.mines && attempts < MAXATTEMPTSRANDOMMINEINDEX) {
 				// Get a random index
 				var newIndex = tools.randomNumber(0, (_board_options.rows * _board_options.length) - 1);
 				// If it doesn't exist, add it to the indexes
@@ -109,7 +87,7 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 				attempts += 1; // Because having an operator just for the number 1 case is STUPID
 			}
 			// Show an error message if attempts went over the max
-			if(attempts >= _max_attempts_random_mine_index) {
+			if(attempts >= MAXATTEMPTSRANDOMMINEINDEX) {
 				throw new Error("Went over the maximum number of attempts allowed to calculate random positions for the mines.");
 			}
 		}
@@ -136,8 +114,10 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 
 		var _add_squares = function() {
 			for(var index = 0, last = _board_options.rows * _board_options.length; index < last; index++) {
+				// set the state change event to capture flag count changes
+				_squares[index].onStateChange(_on_square_state_change);
 				// append the square to the board
-				$board_container.append(_squares[index].getElement());
+				$board_container.append(_squares[index].getSquare());
 			}
 			// Add the clear float div to the end
 			$board_container.append(_create_clear_float());
@@ -196,9 +176,6 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 
 			// Empty the UI board element
 			$board_container.empty();
-
-			// Empty the debug element
-			$debug_container.empty();
 		};
 
 		var _set_state = function(state) {
@@ -208,9 +185,11 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 		var set_state_started = function() {
 			_set_state('started');
 		};
+
 		var set_state_gameover = function() {
 			_set_state('lost');
 		};
+
 		var set_state_won = function() {
 			_set_state('won');
 		};
@@ -243,9 +222,32 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 			generate_board({rows: 16, length: 30, mines: 99});
 		};
 
+		var get_difficulty = function() {
+			return _difficulty;
+		};
+
+
+		// Event Handlers and Listeners
+		var on_flag_count_change = function(callback) {
+			get_board().on('onminecountchange', callback);
+		};
+
+		var log_debug = function() {
+			console.log('Board Options: ', _board_options)
+			var debug_table = [];
+			for(var columns = 0; columns < _board_options.length; columns++) {
+				var debug_row = [];
+				for(var rows = 0; rows < _board_options.rows; rows++) {
+					debug_row.push(_squares[(columns * _board_options.length) + rows].getContentHtml());
+				}
+				debug_table.push(debug_row);
+			}
+			console.table(debug_table);
+		};
+
 		return {
-			getElement: get_element,
-			getDebugElement: get_debug_element,
+			getBoard: get_board,
+			setBoard: set_board,
 
 			createEasy: create_easy,
 			createModerate: create_moderate,
@@ -269,8 +271,12 @@ define(['jquery', 'scripts/square', 'scripts/tools'], function($, square, tools)
 			isWon: is_won,
 			isLost: is_lost,
 
-			showDebug: draw_debug,
-			hideDebug: hide_debug
+			getDifficulty: get_difficulty,
+
+			// Event listeners
+			onFlagCountChange: on_flag_count_change,
+
+			debug: log_debug
 		}
 	}
 });
