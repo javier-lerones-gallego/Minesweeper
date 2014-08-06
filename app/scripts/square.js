@@ -6,13 +6,8 @@ define(['jquery'], function($) {
 		var $button_element = null; // This will point to the HTML button element
 		var $debug_element = null;
 
-		// store the state of right and left buttons, to know when both are clicked at the same time
-		var _left_mousedown = false;
-		var _right_mousedown = false;
-
 		// store the state of the tile, active, flag, or question
 		var _state = 'active';
-		var _revealed = false;
 
 		// store the array of neighbours
 		var _neighbours = [];
@@ -21,65 +16,49 @@ define(['jquery'], function($) {
 		var _bomb_count = 0;
 
 		// For the getters/setters below
-		var _is_bomb = false;
+		var _is_mine = false;
 
-		var mouse_down = function(e) {
-			if(e.button === 0) _left_mousedown = true;
-			if(e.button === 2) _right_mousedown = true;
-
-			if(_left_mousedown && _right_mousedown) {
-				// console.log('Doble button click detected', e);
-				// This is very flimsy TODO: Improve the double button click
-			}
-		};
-
-		var mouse_up = function(e) {
-			// Putting this check here is the only way to make all 3 possibilities work, left, right, and double-button
-			if(_left_mousedown && _right_mousedown) {
-				_left_mousedown = false;
-				_right_mousedown = false;
-			} else if(_left_mousedown) {
+		var mouse_up = function(event) {
+			if(event.button === 0) {
 				left_click();
-			} else if(_right_mousedown) {
-				// console.log('Right button click detected', e);
+			} else if(event.button === 1) {
+				// Middle button, for highlighting neighbours
+			} else if(event.button === 2) {
 				right_click();
 			}
-
-			if(e.button === 0) _left_mousedown = false;
-			if(e.button === 2) _right_mousedown = false;
-
+			// Remove the focus to avoid the shadowed blue that stays after clicking
 			remove_focus();
 		};
 
+		var mouse_down = function(event) {
+			if(event.button === 1) {
+				// Hold the middle button pressed to show the neighbours that will be affected
+			 	return false;
+			}
+		};
+
+		var dblclick = function(event) {
+			// this event will only be triggered on a revealed square with a number
+			if(isRevealed() && !isMine() && isMineNeighbour()) {
+				console.log('double click detected');
+			}
+		};
+
+
 		var left_click = function() {
 			// Reveal the tile!
-			if(isBomb()) {
+			if(isMine()) {
 				// Game Over, notify the board
-
+				get_square().trigger('mineexploded');
+				// Remove the <i> inside
+				get_square().find('i').remove();
+				// Show the square as a red bomb
+				var mine = $('<i>').addClass('fa fa-bomb');
+				get_square().removeClass('btn-warning btn-default btn-primary btn-success disabled').append(mine).addClass('btn-danger');
 			} else {
 				// if not a bomb, reveal it and trigger the neighbour reveal
 				reveal();
 			}
-		};
-
-		var debug_highlight = function(highlight) {
-			if(highlight) {
-				$debug_element.removeClass('btn-primary').addClass('btn-warning');
-			} else {
-				$debug_element.removeClass('btn-warning').addClass('btn-primary');
-			}
-		};
-
-		var debug_mouseover = function() {
-			for(var i = 0, l = _neighbours.length; i < l; i++) {
-				_neighbours[i].debugHighlight(true);
-			};
-		};
-
-		var debug_mouseout = function() {
-			for(var i = 0, l = _neighbours.length; i < l; i++) {
-				_neighbours[i].debugHighlight(false);
-			};
 		};
 
 		var right_click = function() {
@@ -107,12 +86,12 @@ define(['jquery'], function($) {
 		};
 
 		var reveal = function() {
-			if(!_revealed) {
+			if(!isRevealed()) {
 				if(_bomb_count === 0) {
 					// change to white, and empty
-					get_square().removeClass('btn-primary').addClass('btn-default active disabled');
+					get_square().removeClass('btn-primary').addClass('btn-default active');
 					// Mark it as revealed BEFORE invoking the neighbours so the neighbours events don't come back here
-					_revealed = true;
+					setRevealed();
 					// Trigger the neighbours
 					for(var i = 0, l = _neighbours.length; i < l; i++) {
 						_neighbours[i].reveal();
@@ -120,15 +99,15 @@ define(['jquery'], function($) {
 				} else {
 					// change to white with the bomb number inside it, and don't trigger the neighbours
 					var $bomb_count_element = $('<span>').addClass('_' + _bomb_count).html(_bomb_count);
-					get_square().removeClass('btn-primary').addClass('btn-default active disabled').html($bomb_count_element);
+					get_square().removeClass('btn-primary').addClass('btn-default active').html($bomb_count_element);
 					// Mark it as revealed so the neighbours events don't come back here
-					_revealed = true;
+					setRevealed();
 				}
 			}
 		};
 
 		var get_content_html = function() {
-			if(isBomb()) {
+			if(isMine()) {
 				return '*';
 			} else {
 				return _bomb_count;
@@ -136,12 +115,14 @@ define(['jquery'], function($) {
 		};
 
 		var toggle_state = function() {
-			// if active, switch to flag
-			if(isActive()) setFlag();
-			// if flag, switch to question
-			else if(isFlag()) setQuestion();
-			// if question, switch to active
-			else if(isQuestion()) setActive();
+			if(!isRevealed()) {
+				// if active, switch to flag
+				if(isActive()) setFlag();
+				// if flag, switch to question
+				else if(isFlag()) setQuestion();
+				// if question, switch to active
+				else if(isQuestion()) setActive();
+			}
 		};
 
 		var refresh_tile = function() {
@@ -163,8 +144,8 @@ define(['jquery'], function($) {
 			}
 		}
 
-		var isBomb = function() {
-			return _is_bomb;
+		var isMine = function() {
+			return _is_mine;
 		};
 
 		var isActive = function() {
@@ -179,8 +160,16 @@ define(['jquery'], function($) {
 			return _state === 'question';
 		};
 
-		var setBomb = function(val) {
-			_is_bomb = val;
+		var isRevealed = function() {
+			return _state === 'revealed';
+		};
+
+		var isMineNeighbour = function() {
+			return _bomb_count > 0;
+		};
+
+		var setMine = function(val) {
+			_is_mine = val;
 		};
 
 		var setFlag = function() {
@@ -197,10 +186,14 @@ define(['jquery'], function($) {
 			_state = 'active';
 		};
 
+		var setRevealed = function() {
+			_state = 'revealed';
+		};
+
 		var _refresh_bomb_count = function() {
 			_bomb_count = 0;
 			for(var index = 0, len = _neighbours.length; index < len; index++) {
-				if(_neighbours[index].isBomb()) {
+				if(_neighbours[index].isMine()) {
 					_bomb_count += 1;
 				}
 			}
@@ -214,46 +207,72 @@ define(['jquery'], function($) {
 			_refresh_bomb_count();
 		};
 
-		var add_debug_element = function(de) {
-			$debug_element = de;
-
-			get_square().on('mouseover', debug_mouseover);
-			get_square().on('mouseout', debug_mouseout);
-		};
-
-
-		var add_mouse_events = function() {
-			// Attach the right click event to the handler
-			get_square().on('mousedown', mouse_down);
-			get_square().on('mouseup', mouse_up);
+		var disable = function() {
+			get_square().addClass('disabled');
 		};
 
 		// Event handlers and listeners
+		var enable_click_events = function() {
+			_on_mouseup();
+			_on_mousedown();
+			_on_double_click();
+		};
+
+		var _on_mouseup = function() {
+			// Attach the mouse up event to the handler to catch the right click
+			get_square().on('mouseup', mouse_up);
+		};
+
+		var _on_mousedown = function() {
+			get_square().on('mousedown', mouse_down);
+		};
+
+		var _on_double_click = function() {
+			get_square().on('dblclick', dblclick);
+		};
+
 		var on_state_change = function(handler) {
 			get_square().on('squarestatechange', handler);
+		};
+
+		var on_mine_exploded = function(handler) {
+			get_square().on('mineexploded', handler);
+		};
+
+		var on_revealed = function(handler) {
+
 		};
 
 		// Return the module
 		return {
 			getSquare: get_square,
 
-			isBomb: isBomb,
+			isActive: isActive,
+			isMine: isMine,
 			isFlag: isFlag,
 			isQuestion: isQuestion,
+			isRevealed: isRevealed,
 
-			setBomb: setBomb,
+			isMineNeighbour: isMineNeighbour,
+
+			setMine: setMine,
 			setFlag: setFlag,
 			setQuestion: setQuestion,
+			setRevealed: setRevealed,
+			setActive: setActive,
 
 			reveal: reveal,
+			disable: disable,
 
 			getContentHtml: get_content_html,
 
 			addNeighbour: add_neighbour,
 
-			onStateChange: on_state_change,
+			enableClickEvents: enable_click_events,
 
-			addMouseEvents: add_mouse_events
+			onStateChange: on_state_change,
+			onMineExploded: on_mine_exploded,
+			onRevealed: on_revealed
 		}
 	}
 });

@@ -15,6 +15,14 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 			$('#minesleft').html(args.count);
 		});
 
+		theGame.onGameWon(function(event, args) {
+
+		});
+
+		theGame.onGameLost(function(event, args) {
+			console.log('Game Over');
+		});
+
 		// Attach the new board event to the new game buttons
 		$('#neweasy').on('click', function() {
 			// Generate the board

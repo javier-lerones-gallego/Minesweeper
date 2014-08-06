@@ -38,6 +38,19 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			else if(args.state === 'question') remove_flag();
 		};
 
+		var _on_mine_exploded = function(event, args) {
+			// Trigger the ongamelost event
+			get_board().trigger('ongamelost');
+			// Disable all squares
+			_disable_board();
+		};
+
+		var _disable_board = function() {
+			for(var i = 0, l = _squares.length; i < l; i++) {
+				_squares[i].disable();
+			}
+		};
+
 		var add_flag = function() {
 			_flags += 1;
 			get_board().trigger('onminecountchange', { count: _board_options.mines - _flags });
@@ -101,11 +114,9 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 				// Instantiate a new square with the jqueryfied button
 				var newSquare = new square();
 
-				newSquare.addMouseEvents();
-
 				// Is it a bomb?
 				if(_mineIndexes[index])
-					newSquare.setBomb(true);
+					newSquare.setMine(true);
 
 				// Add the square to the squares array
 				_squares.push(newSquare);
@@ -116,6 +127,8 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			for(var index = 0, last = _board_options.rows * _board_options.length; index < last; index++) {
 				// set the state change event to capture flag count changes
 				_squares[index].onStateChange(_on_square_state_change);
+				_squares[index].onMineExploded(_on_mine_exploded);
+				_squares[index].enableClickEvents();
 				// append the square to the board
 				$board_container.append(_squares[index].getSquare());
 			}
@@ -232,6 +245,14 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			get_board().on('onminecountchange', callback);
 		};
 
+		var on_game_won = function(callback) {
+			get_board().on('ongamewon', callback);
+		};
+
+		var on_game_lost = function(callback) {
+			get_board().on('ongamelost', callback);
+		};
+
 		var log_debug = function() {
 			console.log('Board Options: ', _board_options)
 			var debug_table = [];
@@ -275,6 +296,8 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 
 			// Event listeners
 			onFlagCountChange: on_flag_count_change,
+			onGameWon: on_game_won,
+			onGameLost: on_game_lost,
 
 			debug: log_debug
 		}
