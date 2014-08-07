@@ -31,10 +31,38 @@
         <h2>Minesweeper</h2>
         <div id="newgamebuttons">
             <p>
-                <h4>Start a New Game</h4>
-                <button id="neweasy" type="button" class="btn btn-success">Easy</button>
-                <button id="newmedium" type="button" class="btn btn-warning">Medium</button>
-                <button id="newexpert" type="button" class="btn btn-danger">Expert</button>
+                <h4>Games</h4>
+                <div class="row">
+                    <div class="col-sm-6 col-md-4">
+                        <div class="thumbnail">
+                          <img data-src="holder.js/300x300" alt="...">
+                          <div class="caption">
+                            <button id="neweasy" type="button" class="btn btn-success">Easy (9x9)</button>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="thumbnail">
+                          <img data-src="holder.js/300x300" alt="...">
+                          <div class="caption">
+                              <button id="newmedium" type="button" class="btn btn-warning">Medium (16x16)</button>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+
+               <div class="row">
+                    <div class="col-sm-6 col-md-4">
+                        <div class="thumbnail">
+                          <img data-src="holder.js/300x300" alt="...">
+                          <div class="caption">
+                            <button id="newexpert" type="button" class="btn btn-danger">Expert (30x16)</button>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                    </div>
+                </div>
             </p>
         </div>
 
@@ -62,6 +90,53 @@
         <div class="footer">
             <p>Rethought entirely in HTML5+JavaScript by Javier Lerones</p>
         </div>
+
+<!-- Modal -->
+<div class="modal fade" id="theModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="myModalTitle">Congratulations</h4>
+      </div>
+      <div class="modal-body">
+        <table class="table table-striped">
+            <thead>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Time</td>
+                    <td>00:00</td>
+                </tr>
+                <tr>
+                    <td>Best Time</td>
+                    <td>00:00</td>
+                </tr>
+                <tr>
+                    <td>Time Bonus</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Board Clear Bonus</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Mines Disarmed Bonus</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;">Total Board Score</td>
+                    <td style="font-weight: bold;">0</td>
+                </tr>
+            </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default">New Game</button>
+        <button type="button" class="btn btn-primary">Home</button>
+      </div>
+    </div>
+  </div>
+</div>        
 
 </body>
 </html>

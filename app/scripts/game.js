@@ -33,18 +33,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			return $board_container;
 		};
 
-		var _on_square_state_change = function(event, args) {
-			if(args.state === 'flag') add_flag();
-			else if(args.state === 'question') remove_flag();
-		};
-
-		var _on_mine_exploded = function(event, args) {
-			// Trigger the ongamelost event
-			get_board().trigger('ongamelost');
-			// Disable all squares
-			_disable_board();
-		};
-
 		var _disable_board = function() {
 			for(var i = 0, l = _squares.length; i < l; i++) {
 				_squares[i].disable();
@@ -128,6 +116,7 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 				// set the state change event to capture flag count changes
 				_squares[index].onStateChange(_on_square_state_change);
 				_squares[index].onMineExploded(_on_mine_exploded);
+				_squares[index].onRevealed(_check_for_game_won);
 				_squares[index].enableClickEvents();
 				// append the square to the board
 				$board_container.append(_squares[index].getSquare());
@@ -227,7 +216,7 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			generate_board({rows: 9, length: 9, mines: 10});
 		};
 
-		var create_moderate = function() {
+		var create_medium = function() {
 			generate_board({rows: 16, length: 16, mines: 40});
 		};
 
@@ -239,6 +228,28 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			return _difficulty;
 		};
 
+		var _show_all_mines = function() {
+			for(var index = 0, l = _squares.length; index < l; index++) {
+				if(_squares[index].isMine()) {
+					_squares[index].showMine();
+				}
+			};
+		};
+
+		var _check_for_game_won = function() {
+			// Conditions for game victory:
+			// 1. all non mine squares have been revealed
+			var victory = true;
+
+			for(var index = 0, l = _squares.length; index < l; index++) {
+				if(!_squares[index].isRevealed() && !_squares[index].isMine())
+					victory = false;
+			}
+
+			if(victory) {
+				get_board().trigger('ongamewon');
+			}
+		};
 
 		// Event Handlers and Listeners
 		var on_flag_count_change = function(callback) {
@@ -253,13 +264,27 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			get_board().on('ongamelost', callback);
 		};
 
+		var _on_square_state_change = function(event, args) {
+			if(args.state === 'flag') add_flag();
+			else if(args.state === 'question') remove_flag();
+		};
+
+		var _on_mine_exploded = function(event, args) {
+			// Trigger the ongamelost event
+			get_board().trigger('ongamelost');
+			// Show all the mines
+			_show_all_mines();
+			// Disable all squares
+			_disable_board();
+		};
+
 		var log_debug = function() {
 			console.log('Board Options: ', _board_options)
 			var debug_table = [];
 			for(var columns = 0; columns < _board_options.length; columns++) {
 				var debug_row = [];
 				for(var rows = 0; rows < _board_options.rows; rows++) {
-					debug_row.push(_squares[(columns * _board_options.length) + rows].getContentHtml());
+					debug_row.push(_squares[(columns * _board_options.length) + rows].getDebugContent());
 				}
 				debug_table.push(debug_row);
 			}
@@ -271,7 +296,7 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			setBoard: set_board,
 
 			createEasy: create_easy,
-			createModerate: create_moderate,
+			createMedium: create_medium,
 			createExpert: create_expert,
 
 			generate: generate_board,

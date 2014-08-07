@@ -50,11 +50,6 @@ define(['jquery'], function($) {
 			if(isMine()) {
 				// Game Over, notify the board
 				get_square().trigger('mineexploded');
-				// Remove the <i> inside
-				get_square().find('i').remove();
-				// Show the square as a red bomb
-				var mine = $('<i>').addClass('fa fa-bomb');
-				get_square().removeClass('btn-warning btn-default btn-primary btn-success disabled').append(mine).addClass('btn-danger');
 			} else {
 				// if not a bomb, reveal it and trigger the neighbour reveal
 				reveal();
@@ -74,6 +69,14 @@ define(['jquery'], function($) {
 			get_square().blur();
 		};
 
+		var show_mine = function() {
+			// Remove the <i> inside
+			get_square().find('i').remove();
+			// Show the square as a red bomb
+			var mine = $('<i>').addClass('fa fa-bomb');
+			get_square().removeClass('btn-warning btn-default btn-primary btn-success disabled').append(mine).addClass('btn-danger');
+		};
+
 		var get_square = function() {
 			if(!$button_element)
 				$button_element = $('<button>').attr('type', 'button').addClass("btn3d btn btn-primary cell");
@@ -89,7 +92,7 @@ define(['jquery'], function($) {
 			if(!isRevealed()) {
 				if(_bomb_count === 0) {
 					// change to white, and empty
-					get_square().removeClass('btn-primary').addClass('btn-default active');
+					get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active');
 					// Mark it as revealed BEFORE invoking the neighbours so the neighbours events don't come back here
 					setRevealed();
 					// Trigger the neighbours
@@ -99,14 +102,14 @@ define(['jquery'], function($) {
 				} else {
 					// change to white with the bomb number inside it, and don't trigger the neighbours
 					var $bomb_count_element = $('<span>').addClass('_' + _bomb_count).html(_bomb_count);
-					get_square().removeClass('btn-primary').addClass('btn-default active').html($bomb_count_element);
+					get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active').html($bomb_count_element);
 					// Mark it as revealed so the neighbours events don't come back here
 					setRevealed();
 				}
 			}
 		};
 
-		var get_content_html = function() {
+		var get_debug_content = function() {
 			if(isMine()) {
 				return '*';
 			} else {
@@ -124,6 +127,8 @@ define(['jquery'], function($) {
 				else if(isQuestion()) setActive();
 			}
 		};
+
+		var set
 
 		var refresh_tile = function() {
 			if(isActive()) {
@@ -188,6 +193,7 @@ define(['jquery'], function($) {
 
 		var setRevealed = function() {
 			_state = 'revealed';
+			get_square().trigger('revealed');
 		};
 
 		var _refresh_bomb_count = function() {
@@ -240,7 +246,7 @@ define(['jquery'], function($) {
 		};
 
 		var on_revealed = function(handler) {
-
+			get_square().on('revealed', handler);
 		};
 
 		// Return the module
@@ -264,7 +270,9 @@ define(['jquery'], function($) {
 			reveal: reveal,
 			disable: disable,
 
-			getContentHtml: get_content_html,
+			showMine: show_mine,
+
+			getDebugContent: get_debug_content,
 
 			addNeighbour: add_neighbour,
 
