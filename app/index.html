@@ -28,45 +28,49 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
 
-        <h2>Minesweeper</h2>
-        <div id="newgamebuttons">
+        <div class="header">
+            <h3>Mine Sweeper</h3>
+        </div>
+        <div id="home-page">
             <p>
                 <h4>Games</h4>
-                <div class="row">
-                    <div class="col-sm-6 col-md-4">
-                        <div class="thumbnail">
-                          <img data-src="holder.js/300x300" alt="...">
-                          <div class="caption">
-                            <button id="neweasy" type="button" class="btn btn-success">Easy (9x9)</button>
-                          </div>
+                <div style="width: 450px;">
+                    <div class="row">
+                        <div class="col-sm-6 col-md-6">
+                            <div class="thumbnail" id="neweasy">
+                              <img src="images/easy.png" alt="...">
+                              <div class="caption game green">
+                                Easy (9x9)
+                              </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-6">
+                            <div class="thumbnail" id="newmedium">
+                              <img data-src="holder.js/200x200" alt="...">
+                              <div class="caption game orange">
+                                  Medium (16x16)
+                              </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-md-4">
-                        <div class="thumbnail">
-                          <img data-src="holder.js/300x300" alt="...">
-                          <div class="caption">
-                              <button id="newmedium" type="button" class="btn btn-warning">Medium (16x16)</button>
-                          </div>
-                        </div>
-                    </div>
-                </div>
 
-               <div class="row">
-                    <div class="col-sm-6 col-md-4">
-                        <div class="thumbnail">
-                          <img data-src="holder.js/300x300" alt="...">
-                          <div class="caption">
-                            <button id="newexpert" type="button" class="btn btn-danger">Expert (30x16)</button>
-                          </div>
+                   <div class="row">
+                        <div class="col-sm-6 col-md-6">
+                            <div class="thumbnail" id="newexpert">
+                              <img data-src="holder.js/200x200" alt="...">
+                              <div class="caption game red">
+                                    Expert (30x16)
+                              </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-sm-6 col-md-4">
+                        <div class="col-sm-6 col-md-6">
+                        </div>
                     </div>
                 </div>
             </p>
         </div>
 
-        <div id="gameboard" style="display:none;">
+        <div id="board-page" style="display:none;">
             <p>
                 <span>Difficulty: </span>
                 <span id="gamedifficulty" class="easy">Easy</span>
@@ -78,25 +82,43 @@
             <div class="board">
             </div>
 
-            <div class="debug">
-            </div>
-
             <p>
+                <button id="gohome" type="button" class="btn btn-default">Home</button>
                 <button id="newgame" type="button" class="btn btn-default">New Game</button>
             </p>
 
+        </div>
+
+        <div id="scores-page" style="display:none;">
         </div>
 
         <div class="footer">
             <p>Rethought entirely in HTML5+JavaScript by Javier Lerones</p>
         </div>
 
-<!-- Modal -->
-<div class="modal fade" id="theModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<!-- Modals -->
+<div class="modal fade" id="confirmModal">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="myModalTitle">Congratulations</h4>
+        <h4 class="modal-title">Are you sure?</h4>
+      </div>
+      <div class="modal-body">
+        <p></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">Yes</button>
+        <button type="button" class="btn btn-default">Cancel</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="resultsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="modalTitle">Congratulations</h4>
       </div>
       <div class="modal-body">
         <table class="table table-striped">
@@ -131,8 +153,8 @@
         </table>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default">New Game</button>
-        <button type="button" class="btn btn-primary">Home</button>
+        <button type="button" data-event="newgame" class="btn btn-default">New Game</button>
+        <button type="button" data-event="gohome" class="btn btn-primary">Home</button>
       </div>
     </div>
   </div>

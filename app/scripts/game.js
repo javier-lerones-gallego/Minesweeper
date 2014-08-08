@@ -155,16 +155,14 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 				_randomize_mines();
 				_create_squares();
 				_assign_neighbours();
+				// Trigger onminecountchange so the UI refreshes on load
+				get_board().trigger('onminecountchange', { count: _board_options.mines - _flags });
 			}
 		};
 
 		var draw_board = function() {
 			_adjust_board_width();
 			_add_squares();
-		};
-
-		var hide_board = function() {
-
 		};
 
 		///
@@ -213,19 +211,35 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 		};
 
 		var create_easy = function() {
+			_difficulty = 'Easy';
 			generate_board({rows: 9, length: 9, mines: 10});
 		};
 
 		var create_medium = function() {
+			_difficulty = 'Medium';
 			generate_board({rows: 16, length: 16, mines: 40});
 		};
 
 		var create_expert = function() {
+			_difficulty = 'Expert';
 			generate_board({rows: 16, length: 30, mines: 99});
 		};
 
 		var get_difficulty = function() {
 			return _difficulty;
+		};
+
+		var is_easy = function() {
+			return _difficulty === 'Easy';
+		};
+		var is_medium = function() {
+			return _difficulty === 'Medium';
+		};
+		var is_expert = function() {
+			return _difficulty === 'Expert';
+		};
+		var is_custom = function() {
+			return _difficulty === 'Custom';
 		};
 
 		var _show_all_mines = function() {
@@ -303,7 +317,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			reset: reset_board,
 
 			show: draw_board,
-			hide: hide_board,
 
 			addFlag: add_flag,
 			removeFlag: remove_flag,
@@ -318,6 +331,10 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			isLost: is_lost,
 
 			getDifficulty: get_difficulty,
+			isEasy: is_easy,
+			isMedium: is_medium,
+			isExpert: is_expert,
+			isCustom: is_custom,
 
 			// Event listeners
 			onFlagCountChange: on_flag_count_change,

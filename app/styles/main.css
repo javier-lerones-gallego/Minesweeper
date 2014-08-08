@@ -7,9 +7,7 @@
 
 /* Space out content a bit */
 body {
-    padding-top: 20px;
-    padding-bottom: 20px;
-    margin: 15px;
+    background-color: #e5e5e5;
 }
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
@@ -22,15 +20,16 @@ body {
 
 /* Custom page header */
 .header {
-    border-bottom: 1px solid #e5e5e5;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,.15);
+    background-color: #fff;
 }
 
 /* Make the masthead heading the same height as the navigation */
 .header h3 {
     margin-top: 0;
     margin-bottom: 0;
+    padding: 5px;
     line-height: 40px;
-    padding-bottom: 19px;
 }
 
 /* Custom page footer */
@@ -44,8 +43,20 @@ body {
     margin: 30px 0;
 }
 
-.board {
+.thumbnail {
+    border: 1px solid #d8d8d8;
+    border-bottom-width: 2px;
+    cursor: pointer;
+}
 
+#home-page,
+#board-page,
+#scores-page {
+    margin: 15px;
+}
+
+.board {
+    margin-bottom:20px;
 }
 .easy {
     width: 390px;
@@ -80,6 +91,22 @@ body {
 
 }
 
+.caption.game {
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px; color: #fff;
+}
+.game.green {
+    background-color: #47a447;
+    border-color: #398439;
+}
+.game.orange {
+    background-color: #f0ad4e;
+    border-color: #eea236;
+}
+.game.red{
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
 
 #gameboard > p > span {
     font-size: 1.3em;

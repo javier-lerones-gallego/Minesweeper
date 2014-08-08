@@ -17,14 +17,14 @@ var requireJsRuntimeConfig = vm.runInNewContext(fs.readFileSync('app/require.con
 var requireJsOptimizerConfig = merge(requireJsRuntimeConfig, {
         out: 'scripts.js',
         baseUrl: './app',
-        name: 'scripts/startup',
+        name: 'scripts/main',
         paths: {
             requireLib: 'bower_components/requirejs/require'
         },
         include: [
             'requireLib'
         ],
-        insertRequire: ['scripts/startup'],
+        insertRequire: ['scripts/main'],
         bundles: {
             // If you want parts of the site to load on demand, remove them from the 'include' list
             // above, and group them into bundles here.
@@ -145,8 +145,8 @@ gulp.task('watch', ['connect', 'serve'], function () {
         server.changed(file.path);
     });
 
-    gulp.watch('app/styles/**/*.css', ['styles']);
-    gulp.watch('app/scripts/**/*.js', ['scripts']);
+    gulp.watch('app/**/*.css', ['styles']);
+    gulp.watch('app/**/*.js', ['scripts']);
     gulp.watch('app/images/**/*', ['images']);
     gulp.watch('bower.json', ['wiredep']);
 });
