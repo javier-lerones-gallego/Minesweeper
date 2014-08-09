@@ -5,6 +5,8 @@ var gulp = require('gulp');
 var vm = require('vm');
 var fs = require('fs');
 var merge = require('deeply');
+var connect = require('gulp-connect');
+
 
 // for gulp-devtools in chrome
 module.exports = gulp;
@@ -38,7 +40,8 @@ gulp.task('styles', function () {
     return gulp.src('app/styles/main.css')
         .pipe($.autoprefixer('last 1 version'))
         .pipe(gulp.dest('.tmp/styles'))
-        .pipe($.size());
+        .pipe($.size())
+        .pipe(connect.reload());
 });
 
 gulp.task('scripts', function () {
@@ -46,7 +49,8 @@ gulp.task('scripts', function () {
         //.pipe($.jshint())
         //.pipe($.jshint.reporter(require('jshint-stylish')))
         .pipe($.uglify({preserveComments: 'some'}))
-        .pipe($.size());
+        .pipe($.size())
+        .pipe(connect.reload());
 });
 
 gulp.task('html', ['styles', 'scripts'], function () {
@@ -64,7 +68,8 @@ gulp.task('html', ['styles', 'scripts'], function () {
         //.pipe($.useref.restore())
         //.pipe($.useref())
         .pipe(gulp.dest('dist'))
-        .pipe($.size());
+        .pipe($.size())
+        .pipe(connect.reload());
 });
 
 gulp.task('images', function () {
@@ -75,7 +80,8 @@ gulp.task('images', function () {
             interlaced: true
         })))
         .pipe(gulp.dest('dist/images'))
-        .pipe($.size());
+        .pipe($.size())
+        .pipe(connect.reload());
 });
 
 gulp.task('fonts', function () {
@@ -83,7 +89,8 @@ gulp.task('fonts', function () {
         .pipe($.filter('**/*.{eot,svg,ttf,woff}'))
         .pipe($.flatten())
         .pipe(gulp.dest('dist/fonts'))
-        .pipe($.size());
+        .pipe($.size())
+        .pipe(connect.reload());
 });
 
 gulp.task('extras', function () {
@@ -102,21 +109,15 @@ gulp.task('default', ['clean'], function () {
 });
 
 gulp.task('connect', function () {
-    var connect = require('connect');
-    var app = connect()
-        .use(require('connect-livereload')({ port: 35729 }))
-        .use(connect.static('app'))
-        .use(connect.static('.tmp'))
-        .use(connect.directory('app'));
+    connect.server({
+        root: 'app',
+        port: 9000,
+        livereload: true
+    });
 
-    require('http').createServer(app)
-        .listen(9000)
-        .on('listening', function () {
-            console.log('Started connect web server on http://localhost:9000');
-        });
 });
 
-gulp.task('serve', ['connect'], function () {
+gulp.task('serve', function() {
     require('opn')('http://localhost:9000');
 });
 
@@ -132,19 +133,8 @@ gulp.task('wiredep', function () {
 });
 
 gulp.task('watch', ['connect', 'serve'], function () {
-    var server = $.livereload();
-
     // watch for changes
-
-    gulp.watch([
-        'app/*.html',
-        '.tmp/styles/**/*.css',
-        'app/scripts/**/*.js',
-        'app/images/**/*'
-    ]).on('change', function (file) {
-        server.changed(file.path);
-    });
-
+    gulp.watch('app/*.html', ['html']);
     gulp.watch('app/**/*.css', ['styles']);
     gulp.watch('app/**/*.js', ['scripts']);
     gulp.watch('app/images/**/*', ['images']);

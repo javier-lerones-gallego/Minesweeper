@@ -24,13 +24,15 @@ define(['jquery'], function($) {
 			} else if(event.button === 2) {
 				right_click();
 			}
+			// Trigger the clicked event, only used to start the timer
+			get_square().trigger('clicked');
 			// Remove the focus to avoid the shadowed blue that stays after clicking
 			remove_focus();
 		};
 
 		var mouse_down = function(event) {
 			if(event.button === 1) {
-				// Hold the middle button pressed to show the neighbours that will be affected
+				// Cancel the scrolling
 			 	return false;
 			}
 		};
@@ -51,19 +53,6 @@ define(['jquery'], function($) {
 			}
 		}
 
-		var dblclick = function(event) {
-			// this event will only be triggered on a revealed square with a number
-			if(isRevealed() && !isMine() && isMineNeighbour()) {
-				// Will trigger a special reveal in all neighbours if there is the same amount of flags in them as the number of mines around it.
-				// If a neighbour with a mine wasn't covered with a flag is revealed, it will detonate the mine
-				var totalFlagsAround = _count_neighbours_with_flags();
-				if(totalFlagsAround === _bomb_count) {
-					_click_all_active_and_unflagged_neighbours();
-				}
-			}
-		};
-
-
 		var click = function() {
 			// Reveal the tile!
 			if(isActive() && !isMine()) {
@@ -78,6 +67,7 @@ define(['jquery'], function($) {
 		var right_click = function() {
 			// If the square is revealed highlight the neighbours
 			if(isRevealed()) {
+				// highlight the neighbours
 
 			} else {
 				toggle_state();
@@ -85,8 +75,16 @@ define(['jquery'], function($) {
 			}
 		};
 
-		var double_click = function() {
-			// TODO: Complete the double-click
+		var double_click = function(event) {
+			// this event will only be triggered on a revealed square with a number
+			if(isRevealed() && !isMine() && isMineNeighbour()) {
+				// Will trigger a special reveal in all neighbours if there is the same amount of flags in them as the number of mines around it.
+				// If a neighbour with a mine wasn't covered with a flag is revealed, it will detonate the mine
+				var totalFlagsAround = _count_neighbours_with_flags();
+				if(totalFlagsAround === _bomb_count) {
+					_click_all_active_and_unflagged_neighbours();
+				}
+			}
 		};
 
 		var remove_focus = function() {
@@ -258,7 +256,7 @@ define(['jquery'], function($) {
 		};
 
 		var _on_double_click = function() {
-			get_square().on('dblclick', dblclick);
+			get_square().on('dblclick', double_click);
 		};
 
 		var on_state_change = function(handler) {
@@ -271,6 +269,10 @@ define(['jquery'], function($) {
 
 		var on_revealed = function(handler) {
 			get_square().on('revealed', handler);
+		};
+
+		var on_click = function(handler) {
+			get_square().on('clicked', handler);
 		};
 
 		// Return the module
@@ -305,7 +307,8 @@ define(['jquery'], function($) {
 
 			onStateChange: on_state_change,
 			onMineExploded: on_mine_exploded,
-			onRevealed: on_revealed
+			onRevealed: on_revealed,
+			onClick: on_click
 		}
 	}
 });

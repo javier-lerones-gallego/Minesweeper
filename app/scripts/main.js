@@ -8,7 +8,7 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 		// Create a new game object
 		var theGame = new game();
 		theGame.setBoard($('div.board'));
-
+		theGame.createTimer();
 
 		///
 		/// Board Event Handlers
@@ -20,13 +20,19 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 		});
 
 		theGame.onGameWon(function(event, args) {
+			theGame.stopTimer();
 			$('#resultsModal').find('#modalTitle').html('Congratulations');
 			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
 		});
 
 		theGame.onGameLost(function(event, args) {
+			theGame.stopTimer();
 			$('#resultsModal').find('#modalTitle').html('Better luck next time!');
 			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
+		});
+
+		theGame.onTimerTick(function(event, args) {
+			$('#board-page').find('#timer').html(args.time);
 		});
 
 
@@ -109,6 +115,7 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 			theGame.createEasy();
 			$('#gamedifficulty').removeClass('medium expert custom').addClass('easy');
 			$('#minesleft').removeClass('medium expert custom').addClass('easy');
+			resetTimer();
 			showGameBoard();
 		}
 
@@ -117,6 +124,7 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 			theGame.createMedium();
 			$('#gamedifficulty').removeClass('easy expert custom').addClass('medium');
 			$('#minesleft').removeClass('easy expert custom').addClass('medium');
+			resetTimer();
 			showGameBoard();
 		}
 
@@ -125,7 +133,15 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 			theGame.createExpert();
 			$('#gamedifficulty').removeClass('easy medium custom').addClass('expert');
 			$('#minesleft').removeClass('easy medium custom').addClass('expert');
+			resetTimer();
 			showGameBoard();
+		}
+
+		function resetTimer() {
+			// Reset the timer
+			theGame.resetTimer();
+			// Clear the label
+			$('#timer').html('00:00:00');
 		}
 
 		function showGameBoard() {

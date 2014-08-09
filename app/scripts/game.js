@@ -1,10 +1,14 @@
-define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, ui, square, tools) {
+define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/timer'], function($, ui, square, tools, timer) {
 
 	return function() {
 		var self = this;
 
-		var $board_container = null;
+		var $board_container;
 		var _board_options = {}; // store the options here
+
+		var _timer;
+
+		var _first_click = true;
 
 		var _squares = [];
 		var _mineIndexes = {};
@@ -17,20 +21,42 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 		// Keep an index with the number of flags on the board
 		var _flags = 0;
 
-		// Store the game state
-		var _state = null;
-		// possible values:
-		// null: not started not generated
-		// started: generated and started
-		// won: generated and finished correctly
-		// lost: generated and finished incorrectly
-
 		var set_board = function(element) {
 			$board_container = element;
 		};
 
 		var get_board = function() {
 			return $board_container;
+		};
+
+		var create_timer = function() {
+			_timer = new timer();
+			_timer.reset();
+			_listen_timer();
+		};
+
+		var get_timer = function() {
+			return _timer;
+		};
+
+		var pause_timer = function() {
+			_timer.pause();
+		};
+
+		var resume_timer = function() {
+			_timer.resume();
+		};
+
+		var reset_timer = function() {
+			_timer.reset();
+		};
+
+		var stop_timer = function() {
+			_timer.stop();
+		};
+
+		var get_time = function(){
+			_timer.get();
 		};
 
 		var _disable_board = function() {
@@ -117,6 +143,7 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 				_squares[index].onStateChange(_on_square_state_change);
 				_squares[index].onMineExploded(_on_mine_exploded);
 				_squares[index].onRevealed(_check_for_game_won);
+				_squares[index].onClick(_on_square_click);
 				_squares[index].enableClickEvents();
 				// append the square to the board
 				$board_container.append(_squares[index].getSquare());
@@ -143,6 +170,9 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 		var generate_board = function(options) {
 			// Store the options internally
 			_board_options = options;
+
+			// reset the first click flag
+			_first_click = true;
 
 			// keep this in a var to avoid recalculating constantly
 			var totalTiles = _board_options.rows * _board_options.length;
@@ -176,38 +206,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 
 			// Empty the UI board element
 			$board_container.empty();
-		};
-
-		var _set_state = function(state) {
-			_state = state;
-		};
-
-		var set_state_started = function() {
-			_set_state('started');
-		};
-
-		var set_state_gameover = function() {
-			_set_state('lost');
-		};
-
-		var set_state_won = function() {
-			_set_state('won');
-		};
-
-		var get_state = function() {
-			return _state;
-		};
-
-		var is_started = function() {
-			return _state === 'started';
-		};
-
-		var is_won = function() {
-			return _state === 'won';
-		};
-
-		var is_lost = function() {
-			return _state === 'lost';
 		};
 
 		var create_easy = function() {
@@ -265,6 +263,13 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			}
 		};
 
+		// invoked when creating the object
+		var _listen_timer = function() {
+			_timer.onTick(function(event, args) {
+				get_board().trigger('ontimertick', { time: args.time });
+			});
+		};
+
 		// Event Handlers and Listeners
 		var on_flag_count_change = function(callback) {
 			get_board().on('onminecountchange', callback);
@@ -276,6 +281,10 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 
 		var on_game_lost = function(callback) {
 			get_board().on('ongamelost', callback);
+		};
+
+		var on_timer_tick = function(callback) {
+			get_board().on('ontimertick', callback);
 		};
 
 		var _on_square_state_change = function(event, args) {
@@ -290,6 +299,13 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			_show_all_mines();
 			// Disable all squares
 			_disable_board();
+		};
+
+		var _on_square_click = function(event, args) {
+			if(_first_click) {
+				_first_click = false;
+				_timer.start();
+			}
 		};
 
 		var log_debug = function() {
@@ -309,6 +325,14 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			getBoard: get_board,
 			setBoard: set_board,
 
+			createTimer: create_timer,
+			getTimer: get_timer,
+			pauseTimer: pause_timer,
+			resumeTimer: resume_timer,
+			stopTimer: stop_timer,
+			resetTimer: reset_timer,
+			getTime: get_time,
+
 			createEasy: create_easy,
 			createMedium: create_medium,
 			createExpert: create_expert,
@@ -321,15 +345,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			addFlag: add_flag,
 			removeFlag: remove_flag,
 
-			gameStart: set_state_started,
-			gameOver: set_state_gameover,
-			gameWon: set_state_won,
-
-			getState: get_state,
-			isStarted: is_started,
-			isWon: is_won,
-			isLost: is_lost,
-
 			getDifficulty: get_difficulty,
 			isEasy: is_easy,
 			isMedium: is_medium,
@@ -340,6 +355,7 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools'], function($, 
 			onFlagCountChange: on_flag_count_change,
 			onGameWon: on_game_won,
 			onGameLost: on_game_lost,
+			onTimerTick: on_timer_tick,
 
 			debug: log_debug
 		}
