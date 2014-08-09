@@ -20,12 +20,12 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 		});
 
 		theGame.onGameWon(function(event, args) {
-			$('#resultsModal > #modalTitle').html('Congratulations');
+			$('#resultsModal').find('#modalTitle').html('Congratulations');
 			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
 		});
 
 		theGame.onGameLost(function(event, args) {
-			$('#resultsModal > #modalTitle').html('Better luck next time!');
+			$('#resultsModal').find('#modalTitle').html('Better luck next time!');
 			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
 		});
 
