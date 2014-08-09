@@ -28,6 +28,7 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 
 		theGame.onGameLost(function(event, args) {
 			theGame.getTimer().stop();
+			$('#resultsModal').find('#resultsTime').html(theGame.getTimer().getPrint());
 			$('#resultsModal').find('#modalTitle').html('Better luck next time!');
 			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
 		});
@@ -88,7 +89,7 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 		});
 		$('#confirmModal').find('button.btn-default').on('click', function() {
 			// NO
-
+			
 			$('#confirmModal').modal('hide');
 		});
 
