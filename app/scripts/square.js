@@ -20,9 +20,7 @@ define(['jquery'], function($) {
 
 		var mouse_up = function(event) {
 			if(event.button === 0) {
-				left_click();
-			} else if(event.button === 1) {
-				// Middle button, for highlighting neighbours
+				click();
 			} else if(event.button === 2) {
 				right_click();
 			}
@@ -37,28 +35,54 @@ define(['jquery'], function($) {
 			}
 		};
 
+
+		var _count_neighbours_with_flags = function() {
+			var flags = 0;
+			for(var n = 0, totaln = _neighbours.length; n < totaln; n++) {
+				if(_neighbours[n].isFlag()) flags+= 1;
+			}
+			return flags;
+		};
+
+		var _click_all_active_and_unflagged_neighbours = function() {
+			for(var n = 0, totaln = _neighbours.length; n < totaln; n++) {
+				if(_neighbours[n].isActive())
+					_neighbours[n].click();
+			}
+		}
+
 		var dblclick = function(event) {
 			// this event will only be triggered on a revealed square with a number
 			if(isRevealed() && !isMine() && isMineNeighbour()) {
-				console.log('double click detected');
+				// Will trigger a special reveal in all neighbours if there is the same amount of flags in them as the number of mines around it.
+				// If a neighbour with a mine wasn't covered with a flag is revealed, it will detonate the mine
+				var totalFlagsAround = _count_neighbours_with_flags();
+				if(totalFlagsAround === _bomb_count) {
+					_click_all_active_and_unflagged_neighbours();
+				}
 			}
 		};
 
 
-		var left_click = function() {
+		var click = function() {
 			// Reveal the tile!
-			if(isMine()) {
-				// Game Over, notify the board
-				get_square().trigger('mineexploded');
-			} else {
+			if(isActive() && !isMine()) {
 				// if not a bomb, reveal it and trigger the neighbour reveal
 				reveal();
+			} else if(isActive() && isMine()) {
+				// Game Over, notify the board
+				get_square().trigger('mineexploded');
 			}
 		};
 
 		var right_click = function() {
-			toggle_state();
-			refresh_tile();
+			// If the square is revealed highlight the neighbours
+			if(isRevealed()) {
+
+			} else {
+				toggle_state();
+				refresh_tile();
+			}
 		};
 
 		var double_click = function() {
@@ -89,7 +113,7 @@ define(['jquery'], function($) {
 		};
 
 		var reveal = function() {
-			if(!isRevealed()) {
+			if(!isRevealed() && !isFlag() && !isQuestion()) {
 				if(_bomb_count === 0) {
 					// change to white, and empty
 					get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active');
@@ -268,6 +292,7 @@ define(['jquery'], function($) {
 			setActive: setActive,
 
 			reveal: reveal,
+			click: click,
 			disable: disable,
 
 			showMine: show_mine,

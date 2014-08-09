@@ -47,6 +47,11 @@ body {
     border: 1px solid #d8d8d8;
     border-bottom-width: 2px;
     cursor: pointer;
+    transition: background-color .218s,border-color .218s,box-shadow .218s;
+}
+.thumbnail:hover {
+    box-shadow: 0 1px 0 rgba(0,0,0,.1);
+    border-color: #bfbfbf;
 }
 
 #home-page,
@@ -60,7 +65,7 @@ body {
 }
 .easy {
     width: 390px;
-    color: #00CA00;
+    color: #0A9C0A;
 }
 .medium {
     width: 694px;
@@ -108,14 +113,13 @@ body {
     border-color: #d43f3a;
 }
 
-#gameboard > p > span {
+#board-page > p > span {
     font-size: 1.3em;
 }
 #gamedifficulty {
     font-weight: bold;
 }
 #minesleft {
-    color: #00CA00;
     font-weight: bold;
 }
 

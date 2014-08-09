@@ -1,5 +1,5 @@
 
-define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap', 'holder'], function($, game, square, ui) {
+define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], function($, game, square, ui) {
 	// On document.ready just in case
 	$(function() {
 		// Diable the context menu
@@ -107,18 +107,24 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap', '
 		function newEasy() {
 			// Generate the board
 			theGame.createEasy();
+			$('#gamedifficulty').removeClass('medium expert custom').addClass('easy');
+			$('#minesleft').removeClass('medium expert custom').addClass('easy');
 			showGameBoard();
 		}
 
 		function newMedium() {
 			// Generate the board
 			theGame.createMedium();
+			$('#gamedifficulty').removeClass('easy expert custom').addClass('medium');
+			$('#minesleft').removeClass('easy expert custom').addClass('medium');
 			showGameBoard();
 		}
 
 		function newExpert() {
 			// Generate the board
 			theGame.createExpert();
+			$('#gamedifficulty').removeClass('easy medium custom').addClass('expert');
+			$('#minesleft').removeClass('easy medium custom').addClass('expert');
 			showGameBoard();
 		}
 
