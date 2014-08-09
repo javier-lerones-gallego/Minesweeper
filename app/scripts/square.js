@@ -23,6 +23,7 @@ define(['jquery'], function($) {
 				click();
 			} else if(event.button === 2) {
 				right_click();
+				right_click_unhighlight();
 			}
 			// Trigger the clicked event, only used to start the timer
 			get_square().trigger('clicked');
@@ -34,6 +35,8 @@ define(['jquery'], function($) {
 			if(event.button === 1) {
 				// Cancel the scrolling
 			 	return false;
+			} else if(event.button === 2) {
+				right_click_highlight();
 			}
 		};
 
@@ -51,7 +54,21 @@ define(['jquery'], function($) {
 				if(_neighbours[n].isActive())
 					_neighbours[n].click();
 			}
-		}
+		};
+
+		var _highlight_active_neighbours = function() {
+			for(var n = 0, totaln = _neighbours.length; n < totaln; n++) {
+				if(_neighbours[n].isActive())
+					_neighbours[n].highlight();
+			}
+		};
+
+		var _unhighlight_active_neighbours = function() {
+			for(var n = 0, totaln = _neighbours.length; n < totaln; n++) {
+				if(_neighbours[n].isActive())
+					_neighbours[n].unhighlight();
+			}
+		};
 
 		var click = function() {
 			// Reveal the tile!
@@ -66,12 +83,25 @@ define(['jquery'], function($) {
 
 		var right_click = function() {
 			// If the square is revealed highlight the neighbours
-			if(isRevealed()) {
-				// highlight the neighbours
-
-			} else {
+			if(!isRevealed()) {
 				toggle_state();
 				refresh_tile();
+			}
+		};
+
+		var right_click_highlight = function() {
+			// If the square is revealed highlight the neighbours
+			if(isRevealed() && _bomb_count > 0) {
+				// highlight the neighbours
+				_highlight_active_neighbours();
+			}
+		};
+
+		var right_click_unhighlight = function() {
+			// If the square is revealed highlight the neighbours
+			if(isRevealed() && _bomb_count > 0) {
+				// highlight the neighbours
+				_unhighlight_active_neighbours();
 			}
 		};
 
@@ -85,6 +115,14 @@ define(['jquery'], function($) {
 					_click_all_active_and_unflagged_neighbours();
 				}
 			}
+		};
+
+		var highlight = function() {
+			get_square().addClass('active');
+		};
+
+		var unhighlight = function() {
+			get_square().removeClass('active');
 		};
 
 		var remove_focus = function() {
@@ -292,6 +330,9 @@ define(['jquery'], function($) {
 			setQuestion: setQuestion,
 			setRevealed: setRevealed,
 			setActive: setActive,
+
+			highlight: highlight,
+			unhighlight: unhighlight,
 
 			reveal: reveal,
 			click: click,
