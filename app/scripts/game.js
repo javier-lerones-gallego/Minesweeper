@@ -39,26 +39,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 			return _timer;
 		};
 
-		var pause_timer = function() {
-			_timer.pause();
-		};
-
-		var resume_timer = function() {
-			_timer.resume();
-		};
-
-		var reset_timer = function() {
-			_timer.reset();
-		};
-
-		var stop_timer = function() {
-			_timer.stop();
-		};
-
-		var get_time = function(){
-			_timer.get();
-		};
-
 		var _disable_board = function() {
 			for(var i = 0, l = _squares.length; i < l; i++) {
 				_squares[i].disable();
@@ -327,11 +307,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 
 			createTimer: create_timer,
 			getTimer: get_timer,
-			pauseTimer: pause_timer,
-			resumeTimer: resume_timer,
-			stopTimer: stop_timer,
-			resetTimer: reset_timer,
-			getTime: get_time,
 
 			createEasy: create_easy,
 			createMedium: create_medium,

@@ -20,13 +20,14 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 		});
 
 		theGame.onGameWon(function(event, args) {
-			theGame.stopTimer();
+			theGame.getTimer().stop();
+			$('#resultsModal').find('#resultsTime').html(theGame.getTimer().getPrint());
 			$('#resultsModal').find('#modalTitle').html('Congratulations');
 			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
 		});
 
 		theGame.onGameLost(function(event, args) {
-			theGame.stopTimer();
+			theGame.getTimer().stop();
 			$('#resultsModal').find('#modalTitle').html('Better luck next time!');
 			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
 		});
@@ -139,9 +140,9 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 
 		function resetTimer() {
 			// Reset the timer
-			theGame.resetTimer();
+			theGame.getTimer().reset();
 			// Clear the label
-			$('#timer').html('00:00:00');
+			$('#timer').html('00:00');
 		}
 
 		function showGameBoard() {

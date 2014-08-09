@@ -43,11 +43,11 @@ define(['jquery'], function($) {
 				clearInterval(_timerId);
 			} else if(!_paused) {
 				_seconds += 1;
-				$(document).trigger('tick', { seconds: _seconds, time: _print_time() });
+				$(document).trigger('tick', { seconds: _seconds, time: get_print_time() });
 			}
 		};
 
-		var _print_time = function() {
+		var get_print_time = function(includeHours) {
 			var sec_num = parseInt(_seconds, 10); // don't forget the second param
 	    	var hours   = Math.floor(sec_num / 3600);
 	    	var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
@@ -56,7 +56,11 @@ define(['jquery'], function($) {
 	    	if (hours   < 10) {hours   = "0"+hours;}
 	    	if (minutes < 10) {minutes = "0"+minutes;}
 	    	if (seconds < 10) {seconds = "0"+seconds;}
-	    	var time    = hours+':'+minutes+':'+seconds;
+	    	var time    = '';
+	    	if(includeHours)
+	    		time = hours+':'+minutes+':'+seconds;
+	    	else
+	    		time = minutes+':'+seconds;
 	    	return time;
 		};
 
@@ -73,6 +77,8 @@ define(['jquery'], function($) {
 			reset: reset,
 
 			onTick: onTick,
+
+			getPrint: get_print_time,
 
 			get: get,
 			set: set
