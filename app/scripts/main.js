@@ -1,5 +1,5 @@
 
-define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], function($, game, square, ui) {
+define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'scripts/scores', 'bootstrap'], function($, game, square, ui, scores) {
 	// On document.ready just in case
 	$(function() {
 		// Diable the context menu
@@ -9,6 +9,9 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'bootstrap'], 
 		var theGame = new game();
 		theGame.setBoard($('div.board'));
 		theGame.createTimer();
+
+		// Create the scores object
+		var theScores = new scores();
 
 		///
 		/// Board Event Handlers
