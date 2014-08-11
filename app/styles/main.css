@@ -43,10 +43,24 @@ body {
 .header {
     box-shadow: 0 2px 4px 0 rgba(0,0,0,.15);
     background-color: #fff;
-    background-image: url(../images/icon.png);
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    padding-left: 50px;
+    padding-left: 0;
+}
+
+.header .logo {
+    width: 45px;
+    height: 45px;
+    background-color: #EC0006;
+    color: #fff;
+    float: left;
+    margin-right: 10px;
+}
+
+.header .logo .fa {
+    position: relative;
+    top: 10px;
+    left: 9px;
+    font-size: 1.8em;
+    text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.5);
 }
 
 /* Make the masthead heading the same height as the navigation */
@@ -54,7 +68,7 @@ body {
     margin-top: 0;
     margin-bottom: 0;
     padding: 5px;
-    line-height: 33px;
+    line-height: 35px;
 }
 
 /* Custom page footer */
@@ -77,6 +91,11 @@ body {
 .thumbnail:hover {
     box-shadow: 0 1px 0 rgba(0,0,0,.1);
     border-color: #bfbfbf;
+}
+
+.game-thumb {
+    width: 200px;
+    height: 158px;
 }
 
 #home-page,
