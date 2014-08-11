@@ -1,9 +1,9 @@
 define(['jquery'], function($) {
-	var _randomNumber = function(min, max) {
+	var _random_number = function(min, max) {
 		return Math.floor(Math.random() * (max - min + 1) + min);
 	};
 
-	var _calculateNeighbourIndexes = function(index, options) {
+	var _calculate_neighbour_indexes = function(index, options) {
 		var neighbours = [];
 		// index: the 0 based index of the tile we need to calculate the neighbouring indexes
 		// options.rows, options.length
@@ -97,8 +97,8 @@ define(['jquery'], function($) {
 	};
 
 	return {
-		randomNumber: _randomNumber,
-		calculateNeighbours: _calculateNeighbourIndexes,
+		randomNumber: _random_number,
+		calculateNeighbours: _calculate_neighbour_indexes,
 		printTimeFromSeconds: _print_time_from_seconds
 	}
 });

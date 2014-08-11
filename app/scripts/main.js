@@ -1,42 +1,40 @@
 
-define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'scripts/scores', 'bootstrap'], function($, game, square, ui, scores) {
+define(['jquery', 'scripts/board', 'scripts/square', 'scripts/ui', 'scripts/scores', 'scripts/pubsub', 'bootstrap'], function($, board, square, ui, scores, pubsub) {
 	// On document.ready just in case
 	$(function() {
 		// Diable the context menu
 		document.oncontextmenu = function() { return false; };
 
 		// Create a new game object
-		var theGame = new game();
-		theGame.setBoard($('div.board'));
-		theGame.createTimer();
+		var theBoard = new board();
+		theBoard.createTimer();
 
 		// Create the scores object
 		var theScores = new scores();
 
 		///
-		/// Board Event Handlers
+		/// Event Subscriptions
 		///
-
-		// Attach the mine count listener to the game object event
-		theGame.onFlagCountChange(function(event, args) {
+		console.log(pubsub);
+		pubsub.subscribe('flagcount.change', function(args) {
 			$('#minesleft').html(args.count);
 		});
 
-		theGame.onGameWon(function(event, args) {
-			theGame.getTimer().stop();
-			$('#resultsModal').find('#resultsTime').html(theGame.getTimer().getPrint());
+		pubsub.subscribe('game.won', function() {
+			theBoard.getTimer().stop();
+			$('#resultsModal').find('#resultsTime').html(theBoard.getTimer().getPrint());
 			$('#resultsModal').find('#modalTitle').html('Congratulations');
 			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
-		});
+		})
 
-		theGame.onGameLost(function(event, args) {
-			theGame.getTimer().stop();
-			$('#resultsModal').find('#resultsTime').html(theGame.getTimer().getPrint());
+		pubsub.subscribe('game.lost', function() {
+			theBoard.getTimer().stop();
+			$('#resultsModal').find('#resultsTime').html(theBoard.getTimer().getPrint());
 			$('#resultsModal').find('#modalTitle').html('Better luck next time!');
 			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
 		});
 
-		theGame.onTimerTick(function(event, args) {
+		pubsub.subscribe('timer.tick', function(args) {
 			$('#board-page').find('#timer').html(args.time);
 		});
 
@@ -78,14 +76,14 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'scripts/score
 		$('#confirmModal').find('button.btn-primary').on('click', function() {
 			// YES
 			if($('#confirmModal').data('event') === 'gohome') {
-				theGame.reset();
+				theBoard.reset();
 				showHome();
 			} else if($('#confirmModal').data('event') === 'newgame') {
-				theGame.reset();
+				theBoard.reset();
 				// New game of each difficulty
-				if(theGame.isEasy()) newEasy();
-				if(theGame.isMedium()) newMedium();
-				if(theGame.isExpert()) newExpert();
+				if(theBoard.isEasy()) newEasy();
+				if(theBoard.isMedium()) newMedium();
+				if(theBoard.isExpert()) newExpert();
 			}
 
 			$('#confirmModal').modal('hide');
@@ -97,16 +95,16 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'scripts/score
 		});
 
 		$('#resultsModal').find('button.btn-primary').on('click', function() {
-			theGame.reset();
+			theBoard.reset();
 			showHome();
 			$('#resultsModal').modal('hide');
 		});
 		$('#resultsModal').find('button.btn-default').on('click', function() {
-			theGame.reset();
+			theBoard.reset();
 			// New game of each difficulty
-			if(theGame.isEasy()) newEasy();
-			if(theGame.isMedium()) newMedium();
-			if(theGame.isExpert()) newExpert();
+			if(theBoard.isEasy()) newEasy();
+			if(theBoard.isMedium()) newMedium();
+			if(theBoard.isExpert()) newExpert();
 			$('#resultsModal').modal('hide');
 		});
 
@@ -117,7 +115,7 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'scripts/score
 		///
 		function newEasy() {
 			// Generate the board
-			theGame.createEasy();
+			theBoard.createEasy();
 			$('#gamedifficulty').removeClass('medium expert custom').addClass('easy');
 			$('#minesleft').removeClass('medium expert custom').addClass('easy');
 			resetTimer();
@@ -126,7 +124,7 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'scripts/score
 
 		function newMedium() {
 			// Generate the board
-			theGame.createMedium();
+			theBoard.createMedium();
 			$('#gamedifficulty').removeClass('easy expert custom').addClass('medium');
 			$('#minesleft').removeClass('easy expert custom').addClass('medium');
 			resetTimer();
@@ -135,7 +133,7 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'scripts/score
 
 		function newExpert() {
 			// Generate the board
-			theGame.createExpert();
+			theBoard.createExpert();
 			$('#gamedifficulty').removeClass('easy medium custom').addClass('expert');
 			$('#minesleft').removeClass('easy medium custom').addClass('expert');
 			resetTimer();
@@ -144,18 +142,18 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'scripts/score
 
 		function resetTimer() {
 			// Reset the timer
-			theGame.getTimer().reset();
+			theBoard.getTimer().reset();
 			// Clear the label
 			$('#timer').html('00:00');
 		}
 
 		function showGameBoard() {
 			// Show the difficulty level
-			$('#gamedifficulty').html(theGame.getDifficulty());
+			$('#gamedifficulty').html(theBoard.getDifficulty());
 			// Show the board panel
 			showBoard();
 			// Draw the board
-			theGame.show();
+			theBoard.show();
 		}
 
 
@@ -190,6 +188,6 @@ define(['jquery', 'scripts/game', 'scripts/square', 'scripts/ui', 'scripts/score
 		///
 		/// Expose console.debug_board()
 		///
-		window.debug_board = theGame.debug;
+		window.debug_board = theBoard.debug;
 	});
 });

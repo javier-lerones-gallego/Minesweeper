@@ -1,9 +1,6 @@
-define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/timer'], function($, ui, square, tools, timer) {
+define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/timer', 'scripts/pubsub'], function($, ui, square, tools, timer, pubsub) {
 
 	return function() {
-		var self = this;
-
-		var $board_container;
 		var _board_options = {}; // store the options here
 
 		var _timer;
@@ -21,14 +18,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 		// Keep an index with the number of flags on the board
 		var _flags = 0;
 
-		var set_board = function(element) {
-			$board_container = element;
-		};
-
-		var get_board = function() {
-			return $board_container;
-		};
-
 		var create_timer = function() {
 			_timer = new timer();
 			_timer.reset();
@@ -42,54 +31,33 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 		var _disable_board = function() {
 			for(var i = 0, l = _squares.length; i < l; i++) {
 				_squares[i].disable();
-			}
+			};
 		};
 
 		var add_flag = function() {
-			_flags += 1;
-			get_board().trigger('onminecountchange', { count: _board_options.mines - _flags });
+			pubsub.publish('flagcount.change', { count: _board_options.mines - ++_flags });
 		};
 
 		var remove_flag = function() {
-			_flags -= 1;
-			get_board().trigger('onminecountchange', { count: _board_options.mines - _flags });
+			pubsub.publish('flagcount.change', { count: _board_options.mines - --_flags });
 		};
 
-		var _create_clear_float = function() {
-			return $('<div>').css('clear', 'both');
-		};
-
-		var _adjust_board_width = function() {
-			switch(_board_options.length) {
-				case 9:
-					$board_container.removeClass('medium expert').addClass('easy');
-					break;
-				case 16:
-					$board_container.removeClass('easy expert').addClass('medium');
-					break;
-				case 30:
-					$board_container.removeClass('easy medium').addClass('expert');
-					break;
-				default:
-					$board_container.removeClass('medium expert').addClass('easy');
-					break;
-			}
-		};
-
-		var _randomize_mines = function() {
+		var _get_random_mines = function(options) {
+			// The array to stored the indexes
+			var mines = [];
 			// Current attempts
 			var attempts = 0;
 			// Current number of mines added
-			var minesAdded = 0;
+			var added = 0;
 			// Do either until we randomize the total number of mines,
 			// or until we go over the maximum number of attempts
-			while(minesAdded < _board_options.mines && attempts < MAXATTEMPTSRANDOMMINEINDEX) {
+			while(added < options.mines && attempts < MAXATTEMPTSRANDOMMINEINDEX) {
 				// Get a random index
-				var newIndex = tools.randomNumber(0, (_board_options.rows * _board_options.length) - 1);
+				var newIndex = tools.randomNumber(0, (options.rows * options.length) - 1);
 				// If it doesn't exist, add it to the indexes
-				if(!_mineIndexes[newIndex]) {
-					_mineIndexes[newIndex] = newIndex; // Keep the value too for easier lookups
-					minesAdded += 1;
+				if(!indexes[newIndex]) {
+					indexes[newIndex] = newIndex; // Keep the value too for easier lookups
+					added += 1;
 				}
 				attempts += 1; // Because having an operator just for the number 1 case is STUPID
 			}
@@ -97,10 +65,12 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 			if(attempts >= MAXATTEMPTSRANDOMMINEINDEX) {
 				throw new Error("Went over the maximum number of attempts allowed to calculate random positions for the mines.");
 			}
+			// Return the indexes
+			return mines;
 		}
 
 
-		var _create_squares = function() {
+		var _create_squares = function(_mines) {
 			// Now generate the squares, and if the index has a bomb, mark it as bomb
 			// _board_options.rows: number of rows in the board
 			// _board_options.length: length of each row
@@ -109,8 +79,8 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 				var newSquare = new square();
 
 				// Is it a bomb?
-				if(_mineIndexes[index])
-					newSquare.setMine(true);
+				// TODO: This probably should be moved into the square constructor
+				newSquare.setMine(_mines[index]);
 
 				// Add the square to the squares array
 				_squares.push(newSquare);
@@ -119,17 +89,19 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 
 		var _add_squares = function() {
 			for(var index = 0, last = _board_options.rows * _board_options.length; index < last; index++) {
+
 				// set the state change event to capture flag count changes
 				_squares[index].onStateChange(_on_square_state_change);
 				_squares[index].onMineExploded(_on_mine_exploded);
 				_squares[index].onRevealed(_check_for_game_won);
 				_squares[index].onClick(_on_square_click);
 				_squares[index].enableClickEvents();
+
 				// append the square to the board
-				$board_container.append(_squares[index].getSquare());
+				ui.addSquare(ui.newSquare());
 			}
 			// Add the clear float div to the end
-			$board_container.append(_create_clear_float());
+			ui.clearBoardFloat();
 		}
 
 
@@ -162,11 +134,11 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 			if(_board_options.mines >= totalTiles) {
 				throw new Error("Oops, can't create more mines than squares in the board.")
 			} else {
-				_randomize_mines();
-				_create_squares();
+				_create_squares(_get_random_mines(_board_options));
 				_assign_neighbours();
+
 				// Trigger onminecountchange so the UI refreshes on load
-				get_board().trigger('onminecountchange', { count: _board_options.mines - _flags });
+				pubsub.publish('flagcount.change', { count: _board_options.mines - _flags });
 			}
 		};
 
@@ -185,7 +157,7 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 			_flags = 0;
 
 			// Empty the UI board element
-			$board_container.empty();
+			_board_container.empty();
 		};
 
 		var create_easy = function() {
@@ -239,34 +211,18 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 			}
 
 			if(victory) {
-				get_board().trigger('ongamewon');
+				pubsub.publish('game.won');
 			}
 		};
 
 		// invoked when creating the object
 		var _listen_timer = function() {
 			_timer.onTick(function(event, args) {
-				get_board().trigger('ontimertick', { time: args.time });
+				pubsub.publish('timer.tick', { time: args.time });
 			});
 		};
 
 		// Event Handlers and Listeners
-		var on_flag_count_change = function(callback) {
-			get_board().on('onminecountchange', callback);
-		};
-
-		var on_game_won = function(callback) {
-			get_board().on('ongamewon', callback);
-		};
-
-		var on_game_lost = function(callback) {
-			get_board().on('ongamelost', callback);
-		};
-
-		var on_timer_tick = function(callback) {
-			get_board().on('ontimertick', callback);
-		};
-
 		var _on_square_state_change = function(event, args) {
 			if(args.state === 'flag') add_flag();
 			else if(args.state === 'question') remove_flag();
@@ -274,7 +230,7 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 
 		var _on_mine_exploded = function(event, args) {
 			// Trigger the ongamelost event
-			get_board().trigger('ongamelost');
+			pubsub.publish('game.lost');
 			// Show all the mines
 			_show_all_mines();
 			// Disable all squares
@@ -302,9 +258,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 		};
 
 		return {
-			getBoard: get_board,
-			setBoard: set_board,
-
 			createTimer: create_timer,
 			getTimer: get_timer,
 
@@ -325,12 +278,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 			isMedium: is_medium,
 			isExpert: is_expert,
 			isCustom: is_custom,
-
-			// Event listeners
-			onFlagCountChange: on_flag_count_change,
-			onGameWon: on_game_won,
-			onGameLost: on_game_lost,
-			onTimerTick: on_timer_tick,
 
 			debug: log_debug
 		}
