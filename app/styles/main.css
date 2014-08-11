@@ -43,6 +43,10 @@ body {
 .header {
     box-shadow: 0 2px 4px 0 rgba(0,0,0,.15);
     background-color: #fff;
+    background-image: url(../images/icon.png);
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    padding-left: 50px;
 }
 
 /* Make the masthead heading the same height as the navigation */
@@ -50,7 +54,7 @@ body {
     margin-top: 0;
     margin-bottom: 0;
     padding: 5px;
-    line-height: 40px;
+    line-height: 33px;
 }
 
 /* Custom page footer */
