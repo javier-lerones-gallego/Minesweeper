@@ -111,7 +111,7 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 
 		var draw_board = function() {
 			ui.adjustBoardWidth(_board_options);
-			ui.addSquaresToBoard(_board_options);
+			ui.addSquaresToBoard(_squares, _board_options);
 		};
 
 		///

@@ -33,10 +33,15 @@ define(['jquery', 'scripts/pubsub'], function($, pubsub) {
 			}
 		};
 
-		var add_squares_to_board = function(options) {
+		var _new_hash = function(index) {
+			// TODO: generate a hash based on the square index
+			return index;
+		};
+
+		var add_squares_to_board = function(squares, options) {
 			for(var index = 0, last = options.rows * options.length; index < last; index++) {
 				// append the square to the board
-				get_board_container().append(_new_square());
+				get_board_container().append( _new_square( _new_hash(index) ) );
 			}
 			// Add the clear float div to the end
 			clear_board_float();
@@ -50,8 +55,11 @@ define(['jquery', 'scripts/pubsub'], function($, pubsub) {
 			get_board_container().empty();
 		};
 
-		var _new_square = function() {
-			return $('<button>').attr('type', 'button').addClass("btn3d btn btn-primary cell");
+		var _new_square = function(hash) {
+			return $('<button>')
+				.data('squareId', hash)
+				.attr('type', 'button')
+				.addClass("btn3d btn btn-primary cell");
 		};
 
 		// Reveal
