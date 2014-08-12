@@ -1,4 +1,4 @@
-define(['scripts/tools'], function(tools) {
+define(['scripts/tools', 'scripts/pubsub'], function(tools, pubsub) {
 	return function() {
 		// This holds the number of seconds this timer will run through.
 		// If we set it with set() the timer will be a countdown,
@@ -43,16 +43,12 @@ define(['scripts/tools'], function(tools) {
 				clearInterval(_timerId);
 			} else if(!_paused) {
 				_seconds += 1;
-				$(document).trigger('tick', { seconds: _seconds, time: get_print_time() });
+				pubsub.publish('timer.tick', { seconds: _seconds, time: get_print_time() });
 			}
 		};
 
 		var get_print_time = function(showHours) {
 			return tools.printTimeFromSeconds(_seconds, showHours);
-		};
-
-		var onTick = function(handler) {
-			$(document).on('tick', handler);
 		};
 
 		return {
@@ -62,8 +58,6 @@ define(['scripts/tools'], function(tools) {
 			resume: resume,
 
 			reset: reset,
-
-			onTick: onTick,
 
 			getPrint: get_print_time,
 

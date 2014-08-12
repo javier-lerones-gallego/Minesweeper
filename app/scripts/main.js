@@ -8,6 +8,7 @@ define(['jquery', 'scripts/board', 'scripts/square', 'scripts/ui', 'scripts/scor
 		// Create a new game object
 		var theBoard = new board();
 		theBoard.createTimer();
+		theBoard.createSubscriptions();
 
 		// Create the scores object
 		var theScores = new scores();
@@ -15,8 +16,7 @@ define(['jquery', 'scripts/board', 'scripts/square', 'scripts/ui', 'scripts/scor
 		///
 		/// Event Subscriptions
 		///
-		console.log(pubsub);
-		pubsub.subscribe('flagcount.change', function(args) {
+		pubsub.subscribe('game.flag.change', function(args) {
 			$('#minesleft').html(args.count);
 		});
 
@@ -37,6 +37,7 @@ define(['jquery', 'scripts/board', 'scripts/square', 'scripts/ui', 'scripts/scor
 		pubsub.subscribe('timer.tick', function(args) {
 			$('#board-page').find('#timer').html(args.time);
 		});
+
 
 
 		///

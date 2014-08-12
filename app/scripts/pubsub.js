@@ -1,9 +1,9 @@
 
 define(['jquery'], function($) {
-	return function(options) {
-		var o = $('<b/>');
+	var o = $('<b/>');
+	return {
 
-		var _subscribe = function(topic, fn) {
+		subscribe: function(topic, fn) {
 			// Call fn, stripping out the 1st argument (the event object).
 		    function wrapper() {
 		      return fn.apply( this, Array.prototype.slice.call( arguments, 1 ) );
@@ -15,24 +15,17 @@ define(['jquery'], function($) {
 
 		    // Bind the handler.
 		    o.on( topic, wrapper );
-		};
+		},
 
 		// Unsubscribe from a topic.
-	  	var _unsubscribe = function() {
+	  	unsubscribe: function() {
 	    	o.off.apply( o, arguments );
-	  	};
+	  	},
 
 	  	// Publish a topic
-	  	var _publish = function() {
+	  	publish: function() {
 	    	o.trigger.apply( o, arguments );
-	  	};
-
-		// Reveal
-		return {
-			subscribe: _subscribe,
-			publish: _publish,
-			unsubscribe: _unsubscribe
-		}
+	  	}
 	};
 
 });

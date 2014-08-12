@@ -1,11 +1,8 @@
 
-define(['jquery'], function($) {
+define(['jquery', 'scripts/pubsub', 'scripts/ui'], function($, pubsub, ui) {
 
 	return function(game) {
 		// Private module vars and methods
-		var $button_element = null; // This will point to the HTML button element
-		var $debug_element = null;
-
 		// store the state of the tile, active, flag, or question
 		var _state = 'active';
 
@@ -18,27 +15,8 @@ define(['jquery'], function($) {
 		// For the getters/setters below
 		var _is_mine = false;
 
-		var mouse_up = function(event) {
-			if(event.button === 0) {
-				click();
-			} else if(event.button === 2) {
-				right_click();
-				right_click_unhighlight();
-			}
-			// Trigger the clicked event, only used to start the timer
-			get_square().trigger('clicked');
-			// Remove the focus to avoid the shadowed blue that stays after clicking
-			remove_focus();
-		};
 
-		var mouse_down = function(event) {
-			if(event.button === 1) {
-				// Cancel the scrolling
-			 	return false;
-			} else if(event.button === 2) {
-				right_click_highlight();
-			}
-		};
+
 
 
 		var _count_neighbours_with_flags = function() {
@@ -77,7 +55,7 @@ define(['jquery'], function($) {
 				reveal();
 			} else if(isActive() && isMine()) {
 				// Game Over, notify the board
-				get_square().trigger('mineexploded');
+				pubsub.publish('board.mine.exploded');
 			}
 		};
 
@@ -105,9 +83,9 @@ define(['jquery'], function($) {
 			}
 		};
 
-		var double_click = function(event) {
+		var double_click = function() {
 			// this event will only be triggered on a revealed square with a number
-			if(isRevealed() && !isMine() && isMineNeighbour()) {
+			if(isRevealed() && !isMine() && hasMineAround()) {
 				// Will trigger a special reveal in all neighbours if there is the same amount of flags in them as the number of mines around it.
 				// If a neighbour with a mine wasn't covered with a flag is revealed, it will detonate the mine
 				var totalFlagsAround = _count_neighbours_with_flags();
@@ -117,42 +95,14 @@ define(['jquery'], function($) {
 			}
 		};
 
-		var highlight = function() {
-			get_square().addClass('active');
-		};
-
-		var unhighlight = function() {
-			get_square().removeClass('active');
-		};
-
-		var remove_focus = function() {
-			get_square().blur();
-		};
-
-		var show_mine = function() {
-			// Remove the <i> inside
-			get_square().find('i').remove();
-			// Show the square as a red bomb
-			var mine = $('<i>').addClass('fa fa-bomb');
-			get_square().removeClass('btn-warning btn-default btn-primary btn-success disabled').append(mine).addClass('btn-danger');
-		};
-
-		var get_square = function() {
-			if(!$button_element)
-				$button_element = $('<button>').attr('type', 'button').addClass("btn3d btn btn-primary cell");
-
-			return $button_element;
-		};
-
-		var get_debug_element = function() {
-			return $debug_element;
-		};
-
 		var reveal = function() {
 			if(!isRevealed() && !isFlag() && !isQuestion()) {
 				if(_bomb_count === 0) {
+
 					// change to white, and empty
 					get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active');
+
+
 					// Mark it as revealed BEFORE invoking the neighbours so the neighbours events don't come back here
 					setRevealed();
 					// Trigger the neighbours
@@ -160,9 +110,12 @@ define(['jquery'], function($) {
 						_neighbours[i].reveal();
 					}
 				} else {
+
 					// change to white with the bomb number inside it, and don't trigger the neighbours
 					var $bomb_count_element = $('<span>').addClass('_' + _bomb_count).html(_bomb_count);
 					get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active').html($bomb_count_element);
+
+
 					// Mark it as revealed so the neighbours events don't come back here
 					setRevealed();
 				}
@@ -188,27 +141,6 @@ define(['jquery'], function($) {
 			}
 		};
 
-		var set
-
-		var refresh_tile = function() {
-			if(isActive()) {
-				// Remove the <i> inside
-				get_square().find('i').remove();
-				// Change class to btn-primary
-				get_square().removeClass('btn-danger btn-default btn-warning btn-success disabled').addClass('btn-primary');
-			}  else if(isFlag()) {
-				// Add the <i> inside // <i class="fa fa-flag"></i>
-				// Change class to btn-warning
-				var flag = $('<i>').addClass('fa fa-flag');
-				get_square().removeClass('btn-danger btn-default btn-primary btn-success disabled').append(flag).addClass('btn-warning');
-			}  else if(_state === 'question') {
-				// Change the <i> inside to be question
-				get_square().find('i').removeClass('fa-flag').addClass('fa-question-circle');
-				// Change class to btn-warning
-				get_square().removeClass('btn-danger btn-default btn-primary btn-warning disabled').addClass('btn-success');
-			}
-		}
-
 		var isMine = function() {
 			return _is_mine;
 		};
@@ -229,7 +161,7 @@ define(['jquery'], function($) {
 			return _state === 'revealed';
 		};
 
-		var isMineNeighbour = function() {
+		var hasMineAround = function() {
 			return _bomb_count > 0;
 		};
 
@@ -239,12 +171,12 @@ define(['jquery'], function($) {
 
 		var setFlag = function() {
 			_state = 'flag';
-			get_square().trigger('squarestatechange', { state: _state } );
+			pubsub.publish('board.flag.added');
 		};
 
 		var setQuestion = function() {
 			_state = 'question';
-			get_square().trigger('squarestatechange', { state: _state } );
+			pubsub.publish('board.flag.removed');
 		};
 
 		var setActive = function() {
@@ -253,7 +185,7 @@ define(['jquery'], function($) {
 
 		var setRevealed = function() {
 			_state = 'revealed';
-			get_square().trigger('revealed');
+			pubsub.publish('board.square.revealed');
 		};
 
 		var _refresh_bomb_count = function() {
@@ -273,57 +205,99 @@ define(['jquery'], function($) {
 			_refresh_bomb_count();
 		};
 
+
+
+
+
+
+
+
+
+
+
+		///
+		/// All of these need to be moved into UI instead, too much coupling happening here
+		///
+
+		var mouse_up = function(event) {
+			if(event.button === 0) {
+				click();
+			} else if(event.button === 2) {
+				right_click();
+				right_click_unhighlight();
+			}
+			// Trigger the clicked event, only used to start the timer
+			pubsub.publish('board.square.clicked');
+			// Remove the focus to avoid the shadowed blue that stays after clicking
+			remove_focus();
+		};
+
+		var mouse_down = function(event) {
+			if(event.button === 1) {
+				// Cancel the scrolling
+			 	return false;
+			} else if(event.button === 2) {
+				right_click_highlight();
+			}
+		};
+
+		var highlight = function() {
+			get_square().addClass('active');
+		};
+
+		var unhighlight = function() {
+			get_square().removeClass('active');
+		};
+
+		var remove_focus = function() {
+			get_square().blur();
+		};
+
+		var show_mine = function() {
+			// Remove the <i> inside
+			get_square().find('i').remove();
+			// Show the square as a red bomb
+			var mine = $('<i>').addClass('fa fa-bomb');
+			get_square().removeClass('btn-warning btn-default btn-primary btn-success disabled').append(mine).addClass('btn-danger');
+		};
+
+		var refresh_tile = function() {
+			if(isActive()) {
+				// Remove the <i> inside
+				get_square().find('i').remove();
+				// Change class to btn-primary
+				get_square().removeClass('btn-danger btn-default btn-warning btn-success disabled').addClass('btn-primary');
+			}  else if(isFlag()) {
+				// Add the <i> inside // <i class="fa fa-flag"></i>
+				// Change class to btn-warning
+				var flag = $('<i>').addClass('fa fa-flag');
+				get_square().removeClass('btn-danger btn-default btn-primary btn-success disabled').append(flag).addClass('btn-warning');
+			}  else if(_state === 'question') {
+				// Change the <i> inside to be question
+				get_square().find('i').removeClass('fa-flag').addClass('fa-question-circle');
+				// Change class to btn-warning
+				get_square().removeClass('btn-danger btn-default btn-primary btn-warning disabled').addClass('btn-success');
+			}
+		}
+
 		var disable = function() {
 			get_square().addClass('disabled');
 		};
 
-		// Event handlers and listeners
-		var enable_click_events = function() {
-			_on_mouseup();
-			_on_mousedown();
-			_on_double_click();
-		};
 
-		var _on_mouseup = function() {
-			// Attach the mouse up event to the handler to catch the right click
-			get_square().on('mouseup', mouse_up);
-		};
 
-		var _on_mousedown = function() {
-			get_square().on('mousedown', mouse_down);
-		};
 
-		var _on_double_click = function() {
-			get_square().on('dblclick', double_click);
-		};
 
-		var on_state_change = function(handler) {
-			get_square().on('squarestatechange', handler);
-		};
 
-		var on_mine_exploded = function(handler) {
-			get_square().on('mineexploded', handler);
-		};
-
-		var on_revealed = function(handler) {
-			get_square().on('revealed', handler);
-		};
-
-		var on_click = function(handler) {
-			get_square().on('clicked', handler);
-		};
 
 		// Return the module
 		return {
-			getSquare: get_square,
-
 			isActive: isActive,
 			isMine: isMine,
 			isFlag: isFlag,
 			isQuestion: isQuestion,
 			isRevealed: isRevealed,
-
-			isMineNeighbour: isMineNeighbour,
+			hasMineAround: hasMineAround,
 
 			setMine: setMine,
 			setFlag: setFlag,
@@ -342,14 +316,7 @@ define(['jquery'], function($) {
 
 			getDebugContent: get_debug_content,
 
-			addNeighbour: add_neighbour,
-
-			enableClickEvents: enable_click_events,
-
-			onStateChange: on_state_change,
-			onMineExploded: on_mine_exploded,
-			onRevealed: on_revealed,
-			onClick: on_click
+			addNeighbour: add_neighbour
 		}
 	}
 });
