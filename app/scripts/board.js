@@ -22,9 +22,9 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 		};
 
 		var _disable_board = function() {
-			for(var i = 0, l = _squares.length; i < l; i++) {
-				_squares[i].disable();
-			};
+			_squares.forEach(function(s) {
+				s.disable();
+			});
 		};
 
 		var _get_random_mines = function(options) {
@@ -73,22 +73,17 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 
 			// Right after the square objects are created, find the neighbour squares for each one
 			_assign_neighbours();
-		}
+		};
 
 		var _assign_neighbours = function() {
 			// traverse the board one more time and add the neighbours to each square
-			for(var squareIndex = 0, lastTile = _squares.length; squareIndex < lastTile; squareIndex += 1) {
-				var neighbours = tools.calculateNeighbours(squareIndex, _board_options);
+			_squares.forEach(function(s, si) {
+				tools.calculateNeighbours(si, _board_options).forEach(function(n, ni) {
+					_squares[si].addNeighbour(_squares[n]);
+				});
+			});
+		};
 
-				for(var nindex = 0, nlen = neighbours.length; nindex < nlen; nindex++) {
-					_squares[squareIndex].addNeighbour(_squares[neighbours[nindex]]);
-				};
-			};
-		}
-
-		///
-		/// Creates a new board
-		///
 		var generate_board = function(options) {
 			// Store the options internally
 			_board_options = options;
@@ -157,13 +152,10 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 		};
 
 		var _show_all_mines = function() {
-			for(var index = 0, l = _squares.length; index < l; index++) {
-				if(_squares[index].isMine()) {
-					_squares[index].showMine();
-				}
-			};
+			_squares.forEach(function(s, i) {
+				if(s.isMine()) s.showMine();
+			});
 		};
-
 
 		// Event Handlers and Listeners
 		var on_flag_added = function() {
@@ -188,10 +180,10 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 			// 1. all non mine squares have been revealed
 			var victory = true;
 
-			for(var index = 0, l = _squares.length; index < l; index++) {
-				if(!_squares[index].isRevealed() && !_squares[index].isMine())
+			_squares.forEach(function(s, i) {
+				if(!s.isRevealed() && !s.isMine())
 					victory = false;
-			}
+			});
 
 			if(victory) {
 				pubsub.publish('game.won');
@@ -214,18 +206,6 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 			pubsub.subscribe('board.square.clicked', on_square_clicked);
 		};
 
-		var log_debug = function() {
-			console.log('Board Options: ', _board_options)
-			var debug_table = [];
-			for(var columns = 0; columns < _board_options.length; columns++) {
-				var debug_row = [];
-				for(var rows = 0; rows < _board_options.rows; rows++) {
-					debug_row.push(_squares[(columns * _board_options.length) + rows].getDebugContent());
-				}
-				debug_table.push(debug_row);
-			}
-			console.table(debug_table);
-		};
 
 		return {
 			createTimer: create_timer,
@@ -246,9 +226,7 @@ define(['jquery', 'scripts/ui', 'scripts/square', 'scripts/tools', 'scripts/time
 			isEasy: is_easy,
 			isMedium: is_medium,
 			isExpert: is_expert,
-			isCustom: is_custom,
-
-			debug: log_debug
+			isCustom: is_custom
 		}
 	}
 });
