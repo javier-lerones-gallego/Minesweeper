@@ -19,14 +19,14 @@ var requireJsRuntimeConfig = vm.runInNewContext(fs.readFileSync('app/require.con
 var requireJsOptimizerConfig = merge(requireJsRuntimeConfig, {
         out: 'scripts.js',
         baseUrl: './app',
-        name: 'scripts/main',
+        name: 'scripts/game',
         paths: {
             requireLib: 'bower_components/requirejs/require'
         },
         include: [
             'requireLib'
         ],
-        insertRequire: ['scripts/main'],
+        insertRequire: ['scripts/game'],
         bundles: {
             // If you want parts of the site to load on demand, remove them from the 'include' list
             // above, and group them into bundles here.

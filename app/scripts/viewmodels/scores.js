@@ -1,4 +1,4 @@
-define(['scripts/tools'], function(tools) {
+define(['scripts/services/util'], function(utilService) {
 	return function() {
 
 		var _scores = {
@@ -27,7 +27,7 @@ define(['scripts/tools'], function(tools) {
 		///		difficulty: 'easy', 'medium', 'expert',
 		/// }
 		var get_best_time = function(args) {
-			return tools.printTimeFromSeconds(_scores[args.difficulty].best_time);
+			return utilService.printTimeFromSeconds(_scores[args.difficulty].best_time);
 		};
 
 		return {

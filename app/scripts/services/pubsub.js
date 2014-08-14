@@ -1,6 +1,6 @@
 
 define(['jquery'], function($) {
-	var o = $('<b/>');
+	var mediator = $('<b/>');
 	return {
 
 		subscribe: function(topic, fn) {
@@ -14,17 +14,17 @@ define(['jquery'], function($) {
 		    wrapper.guid = fn.guid = fn.guid || ( $.guid ? $.guid++ : $.event.guid++ );
 
 		    // Bind the handler.
-		    o.on( topic, wrapper );
+		    mediator.on( topic, wrapper );
 		},
 
 		// Unsubscribe from a topic.
 	  	unsubscribe: function() {
-	    	o.off.apply( o, arguments );
+	    	mediator.off.apply( mediator, arguments );
 	  	},
 
 	  	// Publish a topic
 	  	publish: function() {
-	    	o.trigger.apply( o, arguments );
+	    	mediator.trigger.apply( mediator, arguments );
 	  	}
 	};
 

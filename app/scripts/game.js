@@ -1,40 +1,52 @@
 
-define(['jquery', 'scripts/board', 'scripts/square', 'scripts/ui', 'scripts/scores', 'scripts/pubsub', 'bootstrap'], function($, board, square, ui, scores, pubsub) {
+define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/viewmodels/scores', 'scripts/services/pubsub', 'bootstrap'], function($, BoardViewModel, uiService, ScoresViewModel, pubsubService) {
 	// On document.ready just in case
 	$(function() {
 		// Diable the context menu
 		document.oncontextmenu = function() { return false; };
 
-		// Create a new game object
-		var theBoard = new board();
-		theBoard.createTimer();
-		theBoard.createSubscriptions();
+		// Create a new board object
+		var _board = new BoardViewModel();
 
 		// Create the scores object
-		var theScores = new scores();
+		var _scores = new ScoresViewModel();
 
 		///
 		/// Event Subscriptions
 		///
-		pubsub.subscribe('game.flag.change', function(args) {
+		pubsubService.subscribe('game.flag.change', function(args) {
 			$('#minesleft').html(args.count);
 		});
 
-		pubsub.subscribe('game.won', function() {
-			theBoard.getTimer().stop();
-			$('#resultsModal').find('#resultsTime').html(theBoard.getTimer().getPrint());
-			$('#resultsModal').find('#modalTitle').html('Congratulations');
-			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
+		pubsubService.subscribe('game.won', function() {
+			// Stop the timer
+			_board.timer.stop();
+			// Show the modal
+			$('#resultsModal')
+				.find('#resultsTime')
+				.html(_board.timer.print())
+				.end()
+				.find('#modalTitle')
+				.html('Congratulations')
+				.end()
+				.modal({ keyboard: false, backdrop: 'static'});
 		})
 
-		pubsub.subscribe('game.lost', function() {
-			theBoard.getTimer().stop();
-			$('#resultsModal').find('#resultsTime').html(theBoard.getTimer().getPrint());
-			$('#resultsModal').find('#modalTitle').html('Better luck next time!');
-			$('#resultsModal').modal({ keyboard: false, backdrop: 'static'});
+		pubsubService.subscribe('game.lost', function() {
+			// Stop the timer
+			_board.timer.stop();
+			// Show the modal
+			$('#resultsModal')
+				.find('#resultsTime')
+				.html(_board.timer.print())
+				.end()
+				.find('#modalTitle')
+				.html('Better luck next time!')
+				.modal({ keyboard: false, backdrop: 'static'});
 		});
 
-		pubsub.subscribe('timer.tick', function(args) {
+		pubsubService.subscribe('timer.tick', function(args) {
+			// Update the time label
 			$('#board-page').find('#timer').html(args.time);
 		});
 
@@ -77,14 +89,14 @@ define(['jquery', 'scripts/board', 'scripts/square', 'scripts/ui', 'scripts/scor
 		$('#confirmModal').find('button.btn-primary').on('click', function() {
 			// YES
 			if($('#confirmModal').data('event') === 'gohome') {
-				theBoard.reset();
+				_board.reset();
 				showHome();
 			} else if($('#confirmModal').data('event') === 'newgame') {
-				theBoard.reset();
+				_board.reset();
 				// New game of each difficulty
-				if(theBoard.isEasy()) newEasy();
-				if(theBoard.isMedium()) newMedium();
-				if(theBoard.isExpert()) newExpert();
+				if(_board.isEasy()) newEasy();
+				if(_board.isMedium()) newMedium();
+				if(_board.isExpert()) newExpert();
 			}
 
 			$('#confirmModal').modal('hide');
@@ -96,16 +108,16 @@ define(['jquery', 'scripts/board', 'scripts/square', 'scripts/ui', 'scripts/scor
 		});
 
 		$('#resultsModal').find('button.btn-primary').on('click', function() {
-			theBoard.reset();
+			_board.reset();
 			showHome();
 			$('#resultsModal').modal('hide');
 		});
 		$('#resultsModal').find('button.btn-default').on('click', function() {
-			theBoard.reset();
+			_board.reset();
 			// New game of each difficulty
-			if(theBoard.isEasy()) newEasy();
-			if(theBoard.isMedium()) newMedium();
-			if(theBoard.isExpert()) newExpert();
+			if(_board.isEasy()) newEasy();
+			if(_board.isMedium()) newMedium();
+			if(_board.isExpert()) newExpert();
 			$('#resultsModal').modal('hide');
 		});
 
@@ -116,45 +128,52 @@ define(['jquery', 'scripts/board', 'scripts/square', 'scripts/ui', 'scripts/scor
 		///
 		function newEasy() {
 			// Generate the board
-			theBoard.createEasy();
+			_board.generate({ level: 'easy' });
+
 			$('#gamedifficulty').removeClass('medium expert custom').addClass('easy');
 			$('#minesleft').removeClass('medium expert custom').addClass('easy');
+
 			resetTimer();
 			showGameBoard();
 		}
 
 		function newMedium() {
 			// Generate the board
-			theBoard.createMedium();
+			_board.generate({ level: 'medium' });
+
 			$('#gamedifficulty').removeClass('easy expert custom').addClass('medium');
 			$('#minesleft').removeClass('easy expert custom').addClass('medium');
+
 			resetTimer();
 			showGameBoard();
 		}
 
 		function newExpert() {
 			// Generate the board
-			theBoard.createExpert();
+			_board.generate({ level: 'expert' });
+
 			$('#gamedifficulty').removeClass('easy medium custom').addClass('expert');
 			$('#minesleft').removeClass('easy medium custom').addClass('expert');
+
 			resetTimer();
 			showGameBoard();
 		}
 
 		function resetTimer() {
 			// Reset the timer
-			theBoard.getTimer().reset();
+			_board.timer.reset();
 			// Clear the label
 			$('#timer').html('00:00');
 		}
 
 		function showGameBoard() {
 			// Show the difficulty level
-			$('#gamedifficulty').html(theBoard.getDifficulty());
+			$('#gamedifficulty').html(_board.boardOptions.difficulty);
 			// Show the board panel
 			showBoard();
 			// Draw the board
-			theBoard.show();
+			uiService.getInstance().adjustBoardWidth(_board.boardOptions);
+			uiService.getInstance().addUISquares(_board.squares);
 		}
 
 
@@ -189,6 +208,6 @@ define(['jquery', 'scripts/board', 'scripts/square', 'scripts/ui', 'scripts/scor
 		///
 		/// Expose console.debug_board()
 		///
-		window.debug_board = theBoard.debug;
+		window.debug_board = _board.debug;
 	});
 });

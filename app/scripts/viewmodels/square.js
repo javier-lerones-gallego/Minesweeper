@@ -1,5 +1,5 @@
 
-define(['jquery', 'scripts/pubsub', 'scripts/ui'], function($, pubsub, ui) {
+define(['jquery', 'scripts/services/pubsub', 'scripts/services/ui'], function($, pubsubService, uiService) {
 
 	return function(game) {
 		// Private module vars and methods
@@ -55,7 +55,7 @@ define(['jquery', 'scripts/pubsub', 'scripts/ui'], function($, pubsub, ui) {
 				reveal();
 			} else if(isActive() && isMine()) {
 				// Game Over, notify the board
-				pubsub.publish('board.mine.exploded');
+				pubsubService.publish('board.mine.exploded');
 			}
 		};
 
@@ -171,12 +171,12 @@ define(['jquery', 'scripts/pubsub', 'scripts/ui'], function($, pubsub, ui) {
 
 		var setFlag = function() {
 			_state = 'flag';
-			pubsub.publish('board.flag.added');
+			pubsubService.publish('board.flag.added');
 		};
 
 		var setQuestion = function() {
 			_state = 'question';
-			pubsub.publish('board.flag.removed');
+			pubsubService.publish('board.flag.removed');
 		};
 
 		var setActive = function() {
@@ -185,7 +185,7 @@ define(['jquery', 'scripts/pubsub', 'scripts/ui'], function($, pubsub, ui) {
 
 		var setRevealed = function() {
 			_state = 'revealed';
-			pubsub.publish('board.square.revealed');
+			pubsubService.publish('board.square.revealed');
 		};
 
 		var _refresh_bomb_count = function() {
@@ -227,7 +227,7 @@ define(['jquery', 'scripts/pubsub', 'scripts/ui'], function($, pubsub, ui) {
 				right_click_unhighlight();
 			}
 			// Trigger the clicked event, only used to start the timer
-			pubsub.publish('board.square.clicked');
+			pubsubService.publish('board.square.clicked');
 			// Remove the focus to avoid the shadowed blue that stays after clicking
 			remove_focus();
 		};
