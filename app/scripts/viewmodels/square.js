@@ -1,37 +1,116 @@
 
-define(['jquery', 'scripts/services/pubsub', 'scripts/services/ui'], function($, pubsubService, uiService) {
+define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 
-	return function(game) {
-		// Private module vars and methods
-		// store the state of the tile, active, flag, or question
-		var _state = 'active';
+	function SquareViewModel(constructor_arguments) {
+		var self = this;
 
-		// store the array of neighbours
-		var _neighbours = [];
+		this.state = 'active';
+		this.neighbours = [];
+		this.bombCount = constructor_arguments.isMine ? -1 : 0; // -1 = mine, 0..8 number of mines around
+		this.id = constructor_arguments.id;
 
-		// the total number of mines around this tile
-		var _bomb_count = 0;
-
-		// For the getters/setters below
-		var _is_mine = false;
-
-
-
-
-
-		var _count_neighbours_with_flags = function() {
-			var flags = 0;
-			for(var n = 0, totaln = _neighbours.length; n < totaln; n++) {
-				if(_neighbours[n].isFlag()) flags+= 1;
+		this._refresh_count = function() {
+			if(this.bombCount > -1) {
+				this.bombCount = 0;
+				this.neighbours.forEach(function(square) {
+					if(square.isMine())
+						this.bombCount += 1;
+				})
 			}
-			return flags;
 		};
 
-		var _click_all_active_and_unflagged_neighbours = function() {
-			for(var n = 0, totaln = _neighbours.length; n < totaln; n++) {
-				if(_neighbours[n].isActive())
-					_neighbours[n].click();
+		this._neighbouring_flag_count = function() {
+			var count = 0;
+			neighbours.forEach(function(square) {
+				if(square.isFlag())
+					count += 1;
+			});
+			return count;
+		};
+
+		this._click_all_active_and_unflagged_neighbours = function() {
+			neighbours.forEach(function(square) {
+				if(square.isActive())
+					square.click();
+			});
+		};
+
+		this.on_square_click = function(args) {
+			if(args.id === self.id) {
+
 			}
+		};
+
+		this.on_square_mousedown = function(args) {
+			if(args.id === self.id) {
+
+			}
+		};
+
+		this.on_square_mouseup = function(args) {
+			if(args.id === self.id) {
+
+			}
+		};
+
+		this.on_square_dblclick = function(args) {
+			if(args.id === self.id) {
+
+			}
+		};
+
+		//
+		// Pretty much this is the constructor logic
+		//
+		// First: Create the subscriptions
+		pubsubService.subscribe('ui.square.click', this.on_square_click);
+		pubsubService.subscribe('ui.square.mousedown', this.on_square_mousedown);
+		pubsubService.subscribe('ui.square.mouseup', this.on_square_mouseup);
+		pubsubService.subscribe('ui.square.dblclick', this.on_square_dblclick);
+	}
+
+	SquareViewModel.prototype.disable = function() {
+		// Transmit the disable event to the UI service through pubsub
+		pubsubService.publish('square.disable', { id: this.id });
+	};
+
+	SquareViewModel.prototype.addNeighbour = function(square) {
+		this.neighbours.push(square);
+		this._refresh_count();
+	};
+
+
+	SquareViewModel.prototype.isMine = function() {
+		return this.bombCount === -1;
+	};
+
+	SquareViewModel.prototype.isActive = function() {
+		return this.state === 'active';
+	};
+
+	SquareViewModel.prototype.isFlag = function() {
+		return this.state === 'flag';
+	};
+
+	SquareViewModel.prototype.isQuestion = function() {
+		return this.state === 'question';
+	};
+
+	SquareViewModel.prototype.isActive = function() {
+		return this.state === 'active';
+	};
+
+	SquareViewModel.prototype.isRevealed = function() {
+		return this.state === 'revealed';
+	};
+
+	return SquareViewModel;
+
+/*
+
+
+		var _click_all_active_and_unflagged_neighbours = function() {
+
 		};
 
 		var _highlight_active_neighbours = function() {
@@ -88,7 +167,7 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/services/ui'], function($,
 			if(isRevealed() && !isMine() && hasMineAround()) {
 				// Will trigger a special reveal in all neighbours if there is the same amount of flags in them as the number of mines around it.
 				// If a neighbour with a mine wasn't covered with a flag is revealed, it will detonate the mine
-				var totalFlagsAround = _count_neighbours_with_flags();
+				var totalFlagsAround = _neighbouring_flag_count();
 				if(totalFlagsAround === _bomb_count) {
 					_click_all_active_and_unflagged_neighbours();
 				}
@@ -141,25 +220,6 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/services/ui'], function($,
 			}
 		};
 
-		var isMine = function() {
-			return _is_mine;
-		};
-
-		var isActive = function() {
-			return _state === 'active';
-		};
-
-		var isFlag = function() {
-			return _state === 'flag';
-		};
-
-		var isQuestion = function() {
-			return _state === 'question';
-		};
-
-		var isRevealed = function() {
-			return _state === 'revealed';
-		};
 
 		var hasMineAround = function() {
 			return _bomb_count > 0;
@@ -188,14 +248,6 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/services/ui'], function($,
 			pubsubService.publish('board.square.revealed');
 		};
 
-		var _refresh_bomb_count = function() {
-			_bomb_count = 0;
-			for(var index = 0, len = _neighbours.length; index < len; index++) {
-				if(_neighbours[index].isMine()) {
-					_bomb_count += 1;
-				}
-			}
-		}
 		var isEmpty = function() {
 			return _bomb_count === 0;
 		};
@@ -280,10 +332,6 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/services/ui'], function($,
 			}
 		}
 
-		var disable = function() {
-			get_square().addClass('disabled');
-		};
-
 
 
 
@@ -319,4 +367,5 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/services/ui'], function($,
 			addNeighbour: add_neighbour
 		}
 	}
+	*/
 });

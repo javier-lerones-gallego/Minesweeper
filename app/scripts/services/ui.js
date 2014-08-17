@@ -8,6 +8,7 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 	function singletonConstructor(options) {
 
 		var self = this;
+		self.squares = {};
 
 		self.boardContainer = $('div.board');
 
@@ -58,19 +59,33 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 		};
 
 		self.newUISquare = function(squareViewModel) {
+			var id = squareViewModel.id;
+
 			var newuisquare = $('<button>')
+					.data('id', id)
 					.attr('type', 'button')
 					.addClass("btn3d btn btn-primary cell");
 
 			// attach all the UI events to the square
-			newuisquare.on('click', squareViewModel.onClick);
-			newuisquare.on('mousedown', squareViewModel.onMouseDown);
-			newuisquare.on('mouseup', squareViewModel.onMouseUp);
-			newuisquare.on('dblclick', squareViewModel.onDblClick);
+			newuisquare.on('click', function(event) { pubsubService.publish('ui.square.click', { id: id, event: event }) });
+			newuisquare.on('mousedown', function(event) { pubsubService.publish('ui.square.mousedown', { id: id, event: event }) });
+			newuisquare.on('mouseup', function(event) { pubsubService.publish('ui.square.mouseup', { id: id, event: event }) });
+			newuisquare.on('dblclick', function(event) { pubsubService.publish('ui.square.dblclick', { id: id, event: event }) });
+
+			// Add it to the map of UI squares
+			self.squares[id] = newuisquare;
 
 			return newuisquare;
 		};
 
+		self.on_disable_square = function(args) {
+			if(self.squares[args.id])
+				self.squares[args.id].addClass('disabled');
+		};
+
+
+
+		pubsubService.subscribe('square.disable', self.on_disable_square);
 	};
 
 	return {

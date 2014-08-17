@@ -14,7 +14,7 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 		///
 		/// Event Subscriptions
 		///
-		pubsubService.subscribe('game.flag.change', function(args) {
+		pubsubService.subscribe('flag.change', function(args) {
 			$('#minesleft').html(args.count);
 		});
 

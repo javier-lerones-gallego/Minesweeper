@@ -1,6 +1,7 @@
 define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/services/pubsub', 'scripts/config/constants', 'scripts/services/util'], function(SquareViewModel, TimerViewModel, pubsubService, constantsService, utilService) {
 
 	function BoardViewModel(constructor_arguments) {
+		var self = this;
 		// The viewmodel variables
 		this.boardOptions = {}; // store the options here
 		this.timer = new TimerViewModel();
@@ -58,7 +59,7 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			// this.boardOptions.length: length of each row
 			for(var index = 0, last = this.boardOptions.rows * this.boardOptions.columns; index < last; index++) {
 				// Add the square to the squares array
-				this.squares.push(new SquareViewModel(mines[index]));
+				this.squares.push(new SquareViewModel({ id: index, isMine: mines[index] }));
 			};
 
 			// Right after the square objects are created, find the neighbour squares for each one
@@ -77,32 +78,32 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 
 		// Event Handlers and Listeners
 		this.on_flag_added = function() {
-			pubsubService.publish('game.flag.change', { count: this.boardOptions.mines - ++this.flags });
+			pubsubService.publish('flag.change', { count: self.boardOptions.mines - ++self.flags });
 		};
 
 		this.on_flag_removed = function() {
-			pubsubService.publish('game.flag.change', { count: this.boardOptions.mines - --this.flags });
+			pubsubService.publish('flag.change', { count: self.boardOptions.mines - --self.flags });
 		};
 
 		this.on_mine_exploded = function(event, args) {
 			// Trigger the ongamelost event
 			pubsubService.publish('game.lost');
 			// Show all the mines
-			this._show_all_mines();
+			self._show_all_mines();
 			// Disable all squares
-			this._disable();
+			self._disable();
 		};
 
 		this.on_square_revealed = function() {
-			if(this._is_victory()) {
+			if(self._is_victory()) {
 				pubsubService.publish('game.won');
 			}
 		};
 
 		this.on_square_clicked = function(event, args) {
-			if(this.firstClick) {
-				this.firstClick = false;
-				this.timer.start();
+			if(self.firstClick) {
+				self.firstClick = false;
+				self.timer.start();
 			}
 		};
 
