@@ -11,18 +11,18 @@ define(['scripts/services/util', 'scripts/services/pubsub'], function(utilServic
 		this.stopped = true;
 
 		this._tick = function() {
-			if(_stopped) {
+			if(this._stopped) {
 				clearInterval(this._timerId);
 			} else if(!this.paused) {
 				this.seconds += 1;
-				pubsubService.publish('timer.tick', { seconds: this.seconds, time: this.print() });
+				pubsubService.publish('timer.tick', { seconds: this.seconds, time: this.toString() });
 			}
 		};
 	};
 
 	TimerViewModel.prototype.start  = function() {
-		if(!_timerId)
-			_timerId = setInterval(this._tick, 1000);
+		if(!this._timerId)
+			this._timerId = setInterval(this._tick, 1000);
 		this.stopped = false;
 	};
 

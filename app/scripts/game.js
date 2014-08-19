@@ -24,7 +24,7 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 			// Show the modal
 			$('#resultsModal')
 				.find('#resultsTime')
-				.html(_board.timer.print())
+				.html(_board.timer.toString())
 				.end()
 				.find('#modalTitle')
 				.html('Congratulations')
@@ -38,7 +38,7 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 			// Show the modal
 			$('#resultsModal')
 				.find('#resultsTime')
-				.html(_board.timer.print())
+				.html(_board.timer.toString())
 				.end()
 				.find('#modalTitle')
 				.html('Better luck next time!')

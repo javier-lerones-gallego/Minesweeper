@@ -67,7 +67,6 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/config/definitions'], func
 					.addClass("btn3d btn btn-primary cell");
 
 			// attach all the UI events to the square
-			newuisquare.on('click', function(event) { pubsubService.publish('ui.square.click', { id: id, event: event }) });
 			newuisquare.on('mousedown', function(event) { pubsubService.publish('ui.square.mousedown', { id: id, event: event }) });
 			newuisquare.on('mouseup', function(event) { pubsubService.publish('ui.square.mouseup', { id: id, event: event }) });
 			newuisquare.on('dblclick', function(event) { pubsubService.publish('ui.square.dblclick', { id: id, event: event }) });
@@ -78,14 +77,73 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/config/definitions'], func
 			return newuisquare;
 		};
 
-		self.on_disable_square = function(args) {
+		self.on_disable = function(args) {
 			if(self.squares[args.id])
 				self.squares[args.id].addClass('disabled');
 		};
 
+		self.on_remove_focus = function(args) {
+			if(self.squares[args.id])
+				self.squares[args.id].blur();
+		};
 
+		self.on_show_mine = function(args) {
+			if(self.squares[args.id]) {
+				// Remove the <i> inside
+				self.squares[args.id].find('i').remove();
+				// Show the square as a red bomb
+				var mine = $('<i>').addClass('fa fa-bomb');
+				self.squares[args.id].removeClass('btn-warning btn-default btn-primary btn-success disabled').append(mine).addClass('btn-danger');
+			}
+		};
 
-		pubsubService.subscribe('square.disable', self.on_disable_square);
+		self.on_refresh = function(args) {
+			if(self.squares[args.id]) {
+				if(self.squares[args.id].isActive()) {
+					// Remove the <i> inside
+					self.squares[args.id].find('i').remove();
+					// Change class to btn-primary
+					self.squares[args.id].removeClass('btn-danger btn-default btn-warning btn-success disabled').addClass('btn-primary');
+				}  else if(self.squares[args.id].isFlag()) {
+					// Add the <i> inside // <i class="fa fa-flag"></i>
+					// Change class to btn-warning
+					var flag = $('<i>').addClass('fa fa-flag');
+					self.squares[args.id].removeClass('btn-danger btn-default btn-primary btn-success disabled').append(flag).addClass('btn-warning');
+				}  else if(self._state === 'question') {
+					// Change the <i> inside to be question
+					self.squares[args.id].find('i').removeClass('fa-flag').addClass('fa-question-circle');
+					// Change class to btn-warning
+					self.squares[args.id].removeClass('btn-danger btn-default btn-primary btn-warning disabled').addClass('btn-success');
+				}
+			}
+		};
+
+		self.on_reveal_empty = function(args) {
+			if(self.squares[args.id]) {
+				self.squares[args.id].removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active');
+			}
+		};
+
+		self.on_reveal_neighbour = function(args) {
+			if(self.squares[args.id]) {
+				var $bomb_count_element = $('<span>').addClass('_' + args.count).html(args.count);
+				self.squares[args.id].removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active').html($bomb_count_element);
+			}
+		};
+
+		self.on_reveal_mine = function(args) {
+			if(self.squares[args.id]) {
+				self.squares[args.id].removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active');
+			}
+		};
+
+		pubsubService.subscribe('square.disable', self.on_disable);
+		pubsubService.subscribe('square.remove.focus', self.on_remove_focus);
+		pubsubService.subscribe('square.show.mine', self.on_show_mine);
+		pubsubService.subscribe('square.refresh', self.on_refresh);
+		pubsubService.subscribe('square.reveal.empty', self.on_reveal_empty);
+		pubsubService.subscribe('square.reveal.neighbour', self.on_reveal_neighbour);
+		pubsubService.subscribe('square.reveal.mine', self.on_reveal_mine);
 	};
 
 	return {

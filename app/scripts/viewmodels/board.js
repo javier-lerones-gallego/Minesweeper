@@ -15,8 +15,8 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 
 		// Private functions
 		this._disable = function() {
-			this.squares.forEach(function(s) {
-				s.disable();
+			this.squares.forEach(function(square) {
+				square.disable();
 			});
 		};
 
@@ -48,9 +48,7 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 		};
 
 		this._show_all_mines = function() {
-			this.squares.forEach(function(s, i) {
-				if(s.isMine()) s.showMine();
-			});
+			pubsubService.publish('ui.show.mines');
 		};
 
 		this._create_squares = function(mines) {

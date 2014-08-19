@@ -4,6 +4,6 @@ define([], function() {
 
 
 	return {
-		BOARD_CONTAINER: BOARD_CONTAINER
+		BOARD_CONTAINER: _BOARD_CONTAINER
 	}
 });

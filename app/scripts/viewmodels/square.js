@@ -2,12 +2,12 @@
 define(['scripts/services/pubsub'], function(pubsubService) {
 
 	function SquareViewModel(constructor_arguments) {
-		var self = this;
-
 		this.state = 'active';
 		this.neighbours = [];
 		this.bombCount = constructor_arguments.isMine ? -1 : 0; // -1 = mine, 0..8 number of mines around
 		this.id = constructor_arguments.id;
+
+		var self = this;
 
 		this._refresh_count = function() {
 			if(this.bombCount > -1) {
@@ -65,12 +65,6 @@ define(['scripts/services/pubsub'], function(pubsubService) {
 			}
 		};
 
-		this.on_square_click = function(args) {
-			if(args.id === self.id) {
-
-			}
-		};
-
 		this.on_square_mousedown = function(args) {
 			if(args.id === self.id) {
 				if(args.event.button === 1) {
@@ -95,14 +89,18 @@ define(['scripts/services/pubsub'], function(pubsubService) {
 				pubsubService.publish('board.square.clicked');
 
 				// Remove the focus to avoid the shadowed blue that stays after clicking
-				self.remove_focus();
+				pubsubService.publish('square.remove.focus', { id: this.id });
 			}
 		};
 
 		this.on_square_dblclick = function(args) {
 			if(args.id === self.id) {
-
+				self.doubleClick();
 			}
+		};
+
+		this.on_show_mines = function() {
+			pubsubService.publish('square.show.mine', { id: this.id });
 		};
 
 		this.get_debug_content = function() {
@@ -117,10 +115,10 @@ define(['scripts/services/pubsub'], function(pubsubService) {
 		// Pretty much this is the constructor logic
 		//
 		// First: Create the subscriptions
-		pubsubService.subscribe('ui.square.click', this.on_square_click);
 		pubsubService.subscribe('ui.square.mousedown', this.on_square_mousedown);
 		pubsubService.subscribe('ui.square.mouseup', this.on_square_mouseup);
 		pubsubService.subscribe('ui.square.dblclick', this.on_square_dblclick);
+		pubsubService.subscribe('ui.show.mines', this.on_show_mines);
 	}
 
 	SquareViewModel.prototype.disable = function() {
@@ -148,7 +146,7 @@ define(['scripts/services/pubsub'], function(pubsubService) {
 		// If the square is revealed highlight the neighbours
 		if(!this.isRevealed()) {
 			this.toggleState();
-			this.refresh();
+			pubsubService.publish('square.refresh', { id: this.id });
 		}
 	};
 
@@ -180,8 +178,7 @@ define(['scripts/services/pubsub'], function(pubsubService) {
 			if(this.bombCount === 0) {
 
 				// change to white, and empty
-				// TODO
-				// get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active');
+				pubsubService.publish('square.reveal.empty', { id: this.id });
 
 				// Mark it as revealed BEFORE invoking the neighbours so the neighbours events don't come back here
 				this.setRevealed();
@@ -191,10 +188,8 @@ define(['scripts/services/pubsub'], function(pubsubService) {
 					square.reveal();
 				});
 			} else {
-				// TODO
 				// change to white with the bomb number inside it, and don't trigger the neighbours
-				// var $bomb_count_element = $('<span>').addClass('_' + _bomb_count).html(_bomb_count);
-				// get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active').html($bomb_count_element);
+				pubsubService.publish('square.reveal.neighbour', { id: this.id, count: this.bombCount });
 
 				// Mark it as revealed so the neighbours events don't come back here
 				this.setRevealed();
@@ -259,7 +254,7 @@ define(['scripts/services/pubsub'], function(pubsubService) {
 
 	SquareViewModel.prototype.addNeighbour = function(n) {
 		this.neighbours.push(n);
-		this.refresh_bomb_count();
+		this._refresh_count();
 	};
 
 	return SquareViewModel;
@@ -292,36 +287,8 @@ define(['scripts/services/pubsub'], function(pubsubService) {
 			get_square().removeClass('active');
 		};
 
-		var remove_focus = function() {
-			get_square().blur();
-		};
 
-		var show_mine = function() {
-			// Remove the <i> inside
-			get_square().find('i').remove();
-			// Show the square as a red bomb
-			var mine = $('<i>').addClass('fa fa-bomb');
-			get_square().removeClass('btn-warning btn-default btn-primary btn-success disabled').append(mine).addClass('btn-danger');
-		};
 
-		var refresh_tile = function() {
-			if(isActive()) {
-				// Remove the <i> inside
-				get_square().find('i').remove();
-				// Change class to btn-primary
-				get_square().removeClass('btn-danger btn-default btn-warning btn-success disabled').addClass('btn-primary');
-			}  else if(isFlag()) {
-				// Add the <i> inside // <i class="fa fa-flag"></i>
-				// Change class to btn-warning
-				var flag = $('<i>').addClass('fa fa-flag');
-				get_square().removeClass('btn-danger btn-default btn-primary btn-success disabled').append(flag).addClass('btn-warning');
-			}  else if(_state === 'question') {
-				// Change the <i> inside to be question
-				get_square().find('i').removeClass('fa-flag').addClass('fa-question-circle');
-				// Change class to btn-warning
-				get_square().removeClass('btn-danger btn-default btn-primary btn-warning disabled').addClass('btn-success');
-			}
-		}
 
 	*/
 });
