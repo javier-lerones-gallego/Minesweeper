@@ -1,5 +1,5 @@
 
-define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
+define(['jquery', 'scripts/services/pubsub', 'scripts/config/definitions'], function($, pubsubService, definitionsService) {
 	// This module generates the UI elements used by the board and square objects,
 	// to make those UI-agnostic by creating HTML stuff in here, also the UI events are handled here,
 	// and tiny pubsub will be used to bubble them to their respective owners.
@@ -10,7 +10,7 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 		var self = this;
 		self.squares = {};
 
-		self.boardContainer = $('div.board');
+		self.boardContainer = $(definitionsService.BOARD_CONTAINER);
 
 		self.adjustBoardWidth = function(options) {
 			switch(options.columns) {

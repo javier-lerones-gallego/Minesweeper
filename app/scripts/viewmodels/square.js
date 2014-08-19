@@ -1,5 +1,5 @@
 
-define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
+define(['scripts/services/pubsub'], function(pubsubService) {
 
 	function SquareViewModel(constructor_arguments) {
 		var self = this;
@@ -15,13 +15,13 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 				this.neighbours.forEach(function(square) {
 					if(square.isMine())
 						this.bombCount += 1;
-				})
+				});
 			}
 		};
 
 		this._neighbouring_flag_count = function() {
 			var count = 0;
-			neighbours.forEach(function(square) {
+			this.neighbours.forEach(function(square) {
 				if(square.isFlag())
 					count += 1;
 			});
@@ -29,10 +29,40 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 		};
 
 		this._click_all_active_and_unflagged_neighbours = function() {
-			neighbours.forEach(function(square) {
+			this.neighbours.forEach(function(square) {
 				if(square.isActive())
 					square.click();
 			});
+		};
+
+		this._highlight_active_neighbours = function() {
+			this.neighbours.forEach(function(square) {
+				if(square.isActive())
+					square.highlight();
+			});
+		};
+
+		this._unhighlight_active_neighbours = function() {
+			this.neighbours.forEach(function(square) {
+				if(square.isActive())
+					square.unhighlight();
+			});
+		};
+
+		this.right_click_highlight = function() {
+			// If the square is revealed highlight the neighbours
+			if(this.isRevealed() && this.bombCount > 0) {
+				// highlight the neighbours
+				this._highlight_active_neighbours();
+			}
+		};
+
+		this.right_click_unhighlight = function() {
+			// If the square is revealed highlight the neighbours
+			if(this.isRevealed() && this.bombCount > 0) {
+				// highlight the neighbours
+				this._unhighlight_active_neighbours();
+			}
 		};
 
 		this.on_square_click = function(args) {
@@ -43,19 +73,43 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 
 		this.on_square_mousedown = function(args) {
 			if(args.id === self.id) {
-
+				if(args.event.button === 1) {
+					// Cancel the scrolling
+				 	return false;
+				} else if(args.event.button === 2) {
+					self.right_click_highlight();
+				}
 			}
 		};
 
 		this.on_square_mouseup = function(args) {
 			if(args.id === self.id) {
+				if(args.event.button === 0) {
+					self.click();
+				} else if(args.event.button === 2) {
+					self.rightClick();
+					self.right_click_unhighlight();
+				}
 
+				// Trigger the clicked event, only used to start the timer
+				pubsubService.publish('board.square.clicked');
+
+				// Remove the focus to avoid the shadowed blue that stays after clicking
+				self.remove_focus();
 			}
 		};
 
 		this.on_square_dblclick = function(args) {
 			if(args.id === self.id) {
 
+			}
+		};
+
+		this.get_debug_content = function() {
+			if(thisisMine()) {
+				return '*';
+			} else {
+				return this.bombCount;
 			}
 		};
 
@@ -79,6 +133,74 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 		this._refresh_count();
 	};
 
+	SquareViewModel.prototype.click = function() {
+		// Reveal the tile!
+		if(this.isActive() && !this.isMine()) {
+			// if not a bomb, reveal it and trigger the neighbour reveal
+			this.reveal();
+		} else if(this.isActive() && this.isMine()) {
+			// Game Over, notify the board
+			pubsubService.publish('board.mine.exploded');
+		}
+	};
+
+	SquareViewModel.prototype.rightClick = function() {
+		// If the square is revealed highlight the neighbours
+		if(!this.isRevealed()) {
+			this.toggleState();
+			this.refresh();
+		}
+	};
+
+	SquareViewModel.prototype.doubleClick = function() {
+		// this event will only be triggered on a revealed square with a number
+		if(this.isRevealed() && !this.isMine() && this.hasMineAround()) {
+			// Will trigger a special reveal in all neighbours if there is the same amount of flags in them as the number of mines around it.
+			// If a neighbour with a mine wasn't covered with a flag is revealed, it will detonate the mine
+			var totalFlagsAround = this._neighbouring_flag_count();
+			if(totalFlagsAround === this.bombCount) {
+				this._click_all_active_and_unflagged_neighbours();
+			}
+		}
+	};
+
+	SquareViewModel.prototype.toggleState = function() {
+		if(!this.isRevealed()) {
+			// if active, switch to flag
+			if(this.isActive()) this.setFlag();
+			// if flag, switch to question
+			else if(this.isFlag()) this.setQuestion();
+			// if question, switch to active
+			else if(this.isQuestion()) this.setActive();
+		}
+	};
+
+	SquareViewModel.prototype.reveal = function() {
+		if(!this.isRevealed() && !this.isFlag() && !this.isQuestion()) {
+			if(this.bombCount === 0) {
+
+				// change to white, and empty
+				// TODO
+				// get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active');
+
+				// Mark it as revealed BEFORE invoking the neighbours so the neighbours events don't come back here
+				this.setRevealed();
+
+				// Trigger the neighbours
+				this.neighbours.forEach(function(square) {
+					square.reveal();
+				});
+			} else {
+				// TODO
+				// change to white with the bomb number inside it, and don't trigger the neighbours
+				// var $bomb_count_element = $('<span>').addClass('_' + _bomb_count).html(_bomb_count);
+				// get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active').html($bomb_count_element);
+
+				// Mark it as revealed so the neighbours events don't come back here
+				this.setRevealed();
+			}
+		}
+	};
 
 	SquareViewModel.prototype.isMine = function() {
 		return this.bombCount === -1;
@@ -104,158 +226,49 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 		return this.state === 'revealed';
 	};
 
+	SquareViewModel.prototype.hasMineAround = function() {
+		return this.bombCount > 0;
+	};
+
+	SquareViewModel.prototype.setMine = function() {
+		this.bombCount = -1;
+	};
+
+	SquareViewModel.prototype.setFlag = function() {
+		this.state = 'flag';
+		pubsubService.publish('board.flag.added');
+	};
+
+	SquareViewModel.prototype.setQuestion = function() {
+		this.state = 'question';
+		pubsubService.publish('board.flag.removed');
+	};
+
+	SquareViewModel.prototype.setActive = function() {
+		this.state = 'active';
+	};
+
+	SquareViewModel.prototype.setRevealed = function() {
+		this.state = 'revealed';
+		pubsubService.publish('board.square.revealed');
+	};
+
+	SquareViewModel.prototype.isEmpty = function() {
+		return this.bombCount === 0;
+	};
+
+	SquareViewModel.prototype.addNeighbour = function(n) {
+		this.neighbours.push(n);
+		this.refresh_bomb_count();
+	};
+
 	return SquareViewModel;
 
 /*
 
 
-		var _click_all_active_and_unflagged_neighbours = function() {
-
-		};
-
-		var _highlight_active_neighbours = function() {
-			for(var n = 0, totaln = _neighbours.length; n < totaln; n++) {
-				if(_neighbours[n].isActive())
-					_neighbours[n].highlight();
-			}
-		};
-
-		var _unhighlight_active_neighbours = function() {
-			for(var n = 0, totaln = _neighbours.length; n < totaln; n++) {
-				if(_neighbours[n].isActive())
-					_neighbours[n].unhighlight();
-			}
-		};
-
-		var click = function() {
-			// Reveal the tile!
-			if(isActive() && !isMine()) {
-				// if not a bomb, reveal it and trigger the neighbour reveal
-				reveal();
-			} else if(isActive() && isMine()) {
-				// Game Over, notify the board
-				pubsubService.publish('board.mine.exploded');
-			}
-		};
-
-		var right_click = function() {
-			// If the square is revealed highlight the neighbours
-			if(!isRevealed()) {
-				toggle_state();
-				refresh_tile();
-			}
-		};
-
-		var right_click_highlight = function() {
-			// If the square is revealed highlight the neighbours
-			if(isRevealed() && _bomb_count > 0) {
-				// highlight the neighbours
-				_highlight_active_neighbours();
-			}
-		};
-
-		var right_click_unhighlight = function() {
-			// If the square is revealed highlight the neighbours
-			if(isRevealed() && _bomb_count > 0) {
-				// highlight the neighbours
-				_unhighlight_active_neighbours();
-			}
-		};
-
-		var double_click = function() {
-			// this event will only be triggered on a revealed square with a number
-			if(isRevealed() && !isMine() && hasMineAround()) {
-				// Will trigger a special reveal in all neighbours if there is the same amount of flags in them as the number of mines around it.
-				// If a neighbour with a mine wasn't covered with a flag is revealed, it will detonate the mine
-				var totalFlagsAround = _neighbouring_flag_count();
-				if(totalFlagsAround === _bomb_count) {
-					_click_all_active_and_unflagged_neighbours();
-				}
-			}
-		};
-
-		var reveal = function() {
-			if(!isRevealed() && !isFlag() && !isQuestion()) {
-				if(_bomb_count === 0) {
-
-					// change to white, and empty
-					get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active');
 
 
-					// Mark it as revealed BEFORE invoking the neighbours so the neighbours events don't come back here
-					setRevealed();
-					// Trigger the neighbours
-					for(var i = 0, l = _neighbours.length; i < l; i++) {
-						_neighbours[i].reveal();
-					}
-				} else {
-
-					// change to white with the bomb number inside it, and don't trigger the neighbours
-					var $bomb_count_element = $('<span>').addClass('_' + _bomb_count).html(_bomb_count);
-					get_square().removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active').html($bomb_count_element);
-
-
-					// Mark it as revealed so the neighbours events don't come back here
-					setRevealed();
-				}
-			}
-		};
-
-		var get_debug_content = function() {
-			if(isMine()) {
-				return '*';
-			} else {
-				return _bomb_count;
-			}
-		};
-
-		var toggle_state = function() {
-			if(!isRevealed()) {
-				// if active, switch to flag
-				if(isActive()) setFlag();
-				// if flag, switch to question
-				else if(isFlag()) setQuestion();
-				// if question, switch to active
-				else if(isQuestion()) setActive();
-			}
-		};
-
-
-		var hasMineAround = function() {
-			return _bomb_count > 0;
-		};
-
-		var setMine = function(val) {
-			_is_mine = val;
-		};
-
-		var setFlag = function() {
-			_state = 'flag';
-			pubsubService.publish('board.flag.added');
-		};
-
-		var setQuestion = function() {
-			_state = 'question';
-			pubsubService.publish('board.flag.removed');
-		};
-
-		var setActive = function() {
-			_state = 'active';
-		};
-
-		var setRevealed = function() {
-			_state = 'revealed';
-			pubsubService.publish('board.square.revealed');
-		};
-
-		var isEmpty = function() {
-			return _bomb_count === 0;
-		};
-
-		var add_neighbour = function(n) {
-			_neighbours.push(n);
-			_refresh_bomb_count();
-		};
 
 
 
@@ -270,28 +283,6 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 		///
 		/// All of these need to be moved into UI instead, too much coupling happening here
 		///
-
-		var mouse_up = function(event) {
-			if(event.button === 0) {
-				click();
-			} else if(event.button === 2) {
-				right_click();
-				right_click_unhighlight();
-			}
-			// Trigger the clicked event, only used to start the timer
-			pubsubService.publish('board.square.clicked');
-			// Remove the focus to avoid the shadowed blue that stays after clicking
-			remove_focus();
-		};
-
-		var mouse_down = function(event) {
-			if(event.button === 1) {
-				// Cancel the scrolling
-			 	return false;
-			} else if(event.button === 2) {
-				right_click_highlight();
-			}
-		};
 
 		var highlight = function() {
 			get_square().addClass('active');
@@ -332,40 +323,5 @@ define(['jquery', 'scripts/services/pubsub'], function($, pubsubService) {
 			}
 		}
 
-
-
-
-
-
-
-		// Return the module
-		return {
-			isActive: isActive,
-			isMine: isMine,
-			isFlag: isFlag,
-			isQuestion: isQuestion,
-			isRevealed: isRevealed,
-			hasMineAround: hasMineAround,
-
-			setMine: setMine,
-			setFlag: setFlag,
-			setQuestion: setQuestion,
-			setRevealed: setRevealed,
-			setActive: setActive,
-
-			highlight: highlight,
-			unhighlight: unhighlight,
-
-			reveal: reveal,
-			click: click,
-			disable: disable,
-
-			showMine: show_mine,
-
-			getDebugContent: get_debug_content,
-
-			addNeighbour: add_neighbour
-		}
-	}
 	*/
 });

@@ -2,6 +2,7 @@ define([], function() {
 	// Get out of the while loop condition, avoid endless loops due to random()
 	var _MAX_ATTEMPTS_RANDOM_MINE_INDEX = 1000;
 
+	// Store the default properties for the basic games here, this helps to avoid comparing strings
 	var _BOARD_OPTIONS = {
 		easy: {
 			difficulty: 'Easy',
