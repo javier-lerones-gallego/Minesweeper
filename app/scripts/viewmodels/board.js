@@ -44,7 +44,7 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 
 		this.board_on_mine_exploded = function(event, args) {
 			// Trigger the ongamelost event
-			pubsubService.publish('game.lost');
+			pubsubService.publish('game.lost', { difficulty: self.boardOptions.difficulty, seconds: self.timer.seconds, mines: self.flags });
 			// Show all the mines
 			pubsubService.publish('square.show.mine');
 			// Disable all squares
@@ -54,7 +54,7 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 		this.board_on_square_revealed = function() {
 			self.revealed += 1;
 			if(self._is_victory()) {
-				pubsubService.publish('game.won');
+				pubsubService.publish('game.won', { difficulty: self.boardOptions.difficulty, seconds: self.timer.seconds, mines: self.flags });
 			}
 		};
 

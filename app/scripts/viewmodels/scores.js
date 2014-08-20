@@ -1,15 +1,20 @@
-define(['scripts/services/util'], function(utilService) {
-	return function() {
+define(['scripts/services/util', 'scripts/services/pubsub'], function(toolsService, pubsubService) {
+	
+	function ScoresViewModel(constructor) {
+		var self = this;
 
-		var _scores = {
+		this.scores = {
 			easy: {
-				best_time: -1
+				best_time: 999999,
+				total_score: 0
 			},
 			medium: {
-				best_time: -1
+				best_time: 999999,
+				total_score: 0
 			},
 			expert: {
-				best_time: -1
+				best_time: 999999,
+				total_score: 0
 			}
 		};
 
@@ -17,23 +22,35 @@ define(['scripts/services/util'], function(utilService) {
 		///		difficulty: 'easy', 'medium', 'expert',
 		///		time: number (in seconds)
 		/// }
-		var new_time = function(args) {
-			if(_scores[args.difficulty].best_time > args.time) {
-				_scores[args.difficulty].best_time = args.time;
+		this.scores_on_game_won = function(args) {
+			// first the best time
+			if(self.scores[args.difficulty.toLowerCase()].best_time > args.seconds) {
+				self.scores[args.difficulty.toLowerCase()].best_time = args.seconds;
 			}
+			// second the scores
+			// Time bonus:
+			//
+			// Board clear bonus:
+			//
+			// Mines disarmed bonus:
 		};
 
-		/// args: {
-		///		difficulty: 'easy', 'medium', 'expert',
-		/// }
-		var get_best_time = function(args) {
-			return utilService.printTimeFromSeconds(_scores[args.difficulty].best_time);
+		this.scores_on_game_lost = function(args) {
+			// mines disarmed bonus:
+			
 		};
 
-		return {
-			newTime: new_time,
 
-			getBestTime: get_best_time
-		}
+		pubsubService.subscribe('game.won', this.scores_on_game_won);
+		pubsubService.subscribe('game.lost', this.scores_on_game_lost);
 	}
+
+	ScoresViewModel.prototype.getBestTime = function(args) {
+		if(this.scores[args.difficulty.toLowerCase()].best_time !== 999999)
+			return toolsService.printTimeFromSeconds(this.scores[args.difficulty.toLowerCase()].best_time);
+		else 
+			return "00:00";
+	};
+
+	return ScoresViewModel;
 });
