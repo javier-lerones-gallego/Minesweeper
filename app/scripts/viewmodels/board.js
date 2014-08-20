@@ -15,31 +15,34 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 
 
 		this._create_squares = function(mines) {
+			var squares = [];
 			// Now generate the squares, and if the index has a bomb, mark it as bomb
 			// this.boardOptions.rows: number of rows in the board
 			// this.boardOptions.length: length of each row
 			for(var index = 0, last = this.boardOptions.rows * this.boardOptions.columns; index < last; index++) {
 				// Add the square to the squares array
-				this.squares.push(new SquareViewModel({ id: index, neighbours: toolsService.calculateNeighbours(index, this.boardOptions) }));
+				squares.push(new SquareViewModel({ id: index, neighbours: toolsService.calculateNeighbours(index, this.boardOptions) }));
 			};
 
 			// Set the mines (this allows the mine count to be updated on each neighbour)
 			mines.forEach(function(mineIndex) {
-				self.squares[mineIndex].setMine();
+				squares[mineIndex].setMine();
 			});
+
+			return squares;
 		};
 
 
 		// Event Handlers and Listeners
-		this.on_flag_added = function() {
+		this.board_on_flag_added = function() {
 			pubsubService.publish('flag.change', { count: self.boardOptions.mines - ++self.flags });
 		};
 
-		this.on_flag_removed = function() {
+		this.board_on_flag_removed = function() {
 			pubsubService.publish('flag.change', { count: self.boardOptions.mines - --self.flags });
 		};
 
-		this.on_mine_exploded = function(event, args) {
+		this.board_on_mine_exploded = function(event, args) {
 			// Trigger the ongamelost event
 			pubsubService.publish('game.lost');
 			// Show all the mines
@@ -48,7 +51,7 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			pubsubService.publish('square.disable');
 		};
 
-		this.on_square_revealed = function() {
+		this.board_on_square_revealed = function() {
 			self.revealed += 1;
 			if(self._is_victory()) {
 				pubsubService.publish('game.won');
@@ -61,7 +64,7 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			return this.revealed === (this.boardOptions.rows * this.boardOptions.columns) - this.boardOptions.mines;
 		};
 
-		this.on_square_clicked = function(event, args) {
+		this.board_on_square_clicked = function(event, args) {
 			if(self.firstClick) {
 				self.firstClick = false;
 				self.timer.start();
@@ -74,12 +77,12 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 		// Pretty much this is the constructor logic
 		//
 		// First: Create the subscriptions to all the relevan messages
-		pubsubService.subscribe('square.flagged', this.on_flag_added);
-		pubsubService.subscribe('square.questioned', this.on_flag_removed);
-		pubsubService.subscribe('board.mine.exploded', this.on_mine_exploded);
+		pubsubService.subscribe('square.flagged', this.board_on_flag_added);
+		pubsubService.subscribe('square.questioned', this.board_on_flag_removed);
+		pubsubService.subscribe('board.mine.exploded', this.board_on_mine_exploded);
 
-		pubsubService.subscribe('square.revealed', this.on_square_revealed);
-		pubsubService.subscribe('square.clicked', this.on_square_clicked);
+		pubsubService.subscribe('square.revealed', this.board_on_square_revealed);
+		pubsubService.subscribe('square.clicked', this.board_on_square_clicked);
 	};
 
 	BoardViewModel.prototype.dispose = function() {
@@ -89,6 +92,12 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 		this.squares = null;
 		this.flags = null;
 		this.revealed = null;
+
+		pubsubService.unsubscribe('square.flagged', this.board_on_flag_added);
+		pubsubService.unsubscribe('square.questioned', this.board_on_flag_removed);
+		pubsubService.unsubscribe('board.mine.exploded', this.board_on_mine_exploded);
+		pubsubService.unsubscribe('square.revealed', this.board_on_square_revealed);
+		pubsubService.unsubscribe('square.clicked', this.board_on_square_clicked);
 	};
 
 	///
@@ -111,7 +120,7 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			throw new Error("Oops, can't create more mines than squares in the board.")
 		} else {
 			// Good to go
-			this._create_squares( toolsService.getRandomMines( this.boardOptions ) );
+			this.squares = this._create_squares( toolsService.getRandomMines( this.boardOptions ) );
 
 			// Trigger onminecountchange so the UI refreshes on load
 			pubsubService.publish('game.flag.change', { count: this.boardOptions.mines - this.flags });
@@ -119,12 +128,17 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 	};
 
 	BoardViewModel.prototype.reset = function() {
-		// Clear the variables
+		// Dispose the squares individually to remove pubsub subscriptions
+		this.squares.forEach(function(square) {
+			square.dispose();
+		});
+		// Clear the array
 		this.squares = [];
 		// this.timer.Reset();
 		this.flags = 0;
 		this.revealed = 0;
-		this.firstClick = true;
+		// Trigger ui reset
+		pubsubService.publish('board.reset');
 	};
 
 	BoardViewModel.prototype.isEasy = function() {

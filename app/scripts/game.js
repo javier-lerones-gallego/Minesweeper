@@ -77,10 +77,18 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 
 		// The other buttons
 		$('#gohome').on('click', function() {
-			$('#confirmModal').data('event', 'gohome').find('div.modal-body').html('Your game progress will be lost...').end().modal({ keyboard: false, backdrop: 'static'});
+			$('#confirmModal').data('event', 'gohome')
+				.find('div.modal-body')
+				.html('Your game progress will be lost...')
+				.end()
+				.modal({ keyboard: false, backdrop: 'static'});
 		});
 		$('#newgame').on('click', function() {
-			$('#confirmModal').data('event', 'newgame').find('div.modal-body').html('Do you want to start a new game? Your game progress will be lost...').end().modal({ keyboard: false, backdrop: 'static'});
+			$('#confirmModal').data('event', 'newgame')
+				.find('div.modal-body')
+				.html('Do you want to start a new game? Your game progress will be lost...')
+				.end()
+				.modal({ keyboard: false, backdrop: 'static'});
 		});
 
 

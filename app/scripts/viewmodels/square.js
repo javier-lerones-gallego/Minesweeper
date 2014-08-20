@@ -11,7 +11,7 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 		this.neighbouringFlagCount = 0;
 
 
-		this.on_square_mousedown = function(args) {
+		this.square_on_square_mousedown = function(args) {
 			if(args.id === self.id) {
 				if(args.event.button === 1) {
 					// Cancel the scrolling for the middle button
@@ -23,7 +23,7 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 			}
 		};
 
-		this.on_square_mouseup = function(args) {
+		this.square_on_square_mouseup = function(args) {
 			if(args.id === self.id) {
 				if(args.event.button === 0) {
 					if(self.isActive() && !self.isMine()) {
@@ -56,7 +56,7 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 			}
 		};
 
-		this.on_square_dblclick = function(args) {
+		this.square_on_square_dblclick = function(args) {
 			if(args.id === self.id) {
 				if(self.isRevealed() && !self.isMine() && self.hasMineAround()) {
 					// Will trigger a special reveal in all neighbours if there is the same amount of flags in them as the number of mines around it.
@@ -68,59 +68,59 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 			}
 		};
 
-		this.on_square_neighbours_highlight = function(args) {
+		this.square_on_square_neighbours_highlight = function(args) {
 			if(self.neighbours[args.id]) {
 				if(self.isActive())
 					pubsubService.publish('ui.square.highlight', { id: self.id });
 			}
 		};
 
-		this.on_square_neighbours_unhighlight = function(args) {
+		this.square_on_square_neighbours_unhighlight = function(args) {
 			if(self.neighbours[args.id]) {
 				if(self.isActive())
 					pubsubService.publish('ui.square.unhighlight', { id: self.id });
 			}
 		};
 
-		this.on_square_neighbours_reveal = function(args) {
+		this.square_on_square_neighbours_reveal = function(args) {
 			if(self.neighbours[args.id]) {
 				self.reveal();
 			}
 		};
 
-		this.on_square_neighbours_add_mine = function(args) {
+		this.square_on_square_neighbours_add_mine = function(args) {
 			if(self.neighbours[args.id]) {
 				if(self.bombCount > -1)
 					self.bombCount += 1;
 			}
 		};
 
-		this.on_square_disable = function(args) {
+		this.square_on_square_disable = function(args) {
 			if(!!args && !!args['id']) {
 				if(args.id === self.id)
 					pubsubService.publish('ui.square.disable', { id: self.id });
 			}
 		};
 
-		this.on_square_show_mine = function() {
+		this.square_on_square_show_mine = function() {
 			if(self.isMine()) {
 				pubsubService.publish('ui.square.show.mine', { id: self.id });
 			}
 		};
 
-		this.on_square_flagged = function(args) {
+		this.square_on_square_flagged = function(args) {
 			if(self.neighbours[args.id]) {
 				self.neighbouringFlagCount += 1;
 			}
 		};
 
-		this.on_square_questioned = function(args) {
+		this.square_on_square_questioned = function(args) {
 			if(self.neighbours[args.id]) {
 				self.neighbouringFlagCount -= 1;
 			}
 		};
 
-		this.on_square_neighbours_click = function(args) {
+		this.square_on_square_neighbours_click = function(args) {
 			if(self.neighbours[args.id]) {
 				if(self.isActive() && !self.isMine()) {
 					// if not a bomb, reveal it and trigger the neighbour reveal
@@ -145,29 +145,46 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 		// Pretty much this is the constructor logic
 		// make it an iffe to make it more obvious
 		//
-
 		(function() {
 			// First: Create the subscriptions
 			//
 			// Events triggered by the UI
-			pubsubService.subscribe('ui.square.mousedown', self.on_square_mousedown);
-			pubsubService.subscribe('ui.square.mouseup', self.on_square_mouseup);
-			pubsubService.subscribe('ui.square.dblclick', self.on_square_dblclick);
+			pubsubService.subscribe('ui.square.mousedown', self.square_on_square_mousedown);
+			pubsubService.subscribe('ui.square.mouseup', self.square_on_square_mouseup);
+			pubsubService.subscribe('ui.square.dblclick', self.square_on_square_dblclick);
 			// Events triggered by other objects in the application
-			pubsubService.subscribe('square.show.mine', self.on_square_show_mine);
-			pubsubService.subscribe('square.disable', self.on_square_disable);
+			pubsubService.subscribe('square.show.mine', self.square_on_square_show_mine);
+			pubsubService.subscribe('square.disable', self.square_on_square_disable);
 			// Events triggered by other squares
-			pubsubService.subscribe('square.neighbours.highlight', self.on_square_neighbours_highlight);
-			pubsubService.subscribe('square.neighbours.unhighlight', self.on_square_neighbours_unhighlight);
-			pubsubService.subscribe('square.neighbours.reveal', self.on_square_neighbours_reveal);
-			pubsubService.subscribe('square.neighbours.add.mine', self.on_square_neighbours_add_mine);
-			pubsubService.subscribe('square.flagged', self.on_square_flagged);
-			pubsubService.subscribe('square.questioned', self.on_square_questioned);
-			pubsubService.subscribe('square.neighbours.click', self.on_square_neighbours_click);
+			pubsubService.subscribe('square.neighbours.highlight', self.square_on_square_neighbours_highlight);
+			pubsubService.subscribe('square.neighbours.unhighlight', self.square_on_square_neighbours_unhighlight);
+			pubsubService.subscribe('square.neighbours.reveal', self.square_on_square_neighbours_reveal);
+			pubsubService.subscribe('square.neighbours.add.mine', self.square_on_square_neighbours_add_mine);
+			pubsubService.subscribe('square.flagged', self.square_on_square_flagged);
+			pubsubService.subscribe('square.questioned', self.square_on_square_questioned);
+			pubsubService.subscribe('square.neighbours.click', self.square_on_square_neighbours_click);
 		}());
 
 
 	}
+
+	SquareViewModel.prototype.dispose = function() {
+		// Events triggered by the UI
+		pubsubService.unsubscribe('ui.square.mousedown', this.square_on_square_mousedown);
+		pubsubService.unsubscribe('ui.square.mouseup', this.square_on_square_mouseup);
+		pubsubService.unsubscribe('ui.square.dblclick', this.square_on_square_dblclick);
+		// Events triggered by other objects in the application
+		pubsubService.unsubscribe('square.show.mine', this.square_on_square_show_mine);
+		pubsubService.unsubscribe('square.disable', this.square_on_square_disable);
+		// Events triggered by other squares
+		pubsubService.unsubscribe('square.neighbours.highlight', this.square_on_square_neighbours_highlight);
+		pubsubService.unsubscribe('square.neighbours.unhighlight', this.square_on_square_neighbours_unhighlight);
+		pubsubService.unsubscribe('square.neighbours.reveal', this.square_on_square_neighbours_reveal);
+		pubsubService.unsubscribe('square.neighbours.add.mine', this.square_on_square_neighbours_add_mine);
+		pubsubService.unsubscribe('square.flagged', this.square_on_square_flagged);
+		pubsubService.unsubscribe('square.questioned', this.square_on_square_questioned);
+		pubsubService.unsubscribe('square.neighbours.click', this.square_on_square_neighbours_click);
+	};
 
 	SquareViewModel.prototype.reveal = function() {
 		if(!this.isRevealed() && !this.isFlag() && !this.isQuestion()) {
