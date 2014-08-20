@@ -1,5 +1,5 @@
 
-define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/viewmodels/scores', 'scripts/services/pubsub', 'bootstrap'], function($, BoardViewModel, uiService, ScoresViewModel, pubsubService) {
+define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/services/pubsub', 'bootstrap'], function($, BoardViewModel, uiService, pubsubService) {
 	// On document.ready just in case
 	$(function() {
 		// Diable the context menu
@@ -7,9 +7,6 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 
 		// Create a new board object
 		var _board = new BoardViewModel();
-
-		// Create the scores object
-		var _scores = new ScoresViewModel();
 
 		///
 		/// Event Subscriptions
@@ -27,7 +24,7 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 				.html(_board.timer.toString())
 				.end()
 				.find('#resultsBestTime')
-				.html(_scores.getBestTime({difficulty: _board.boardOptions.difficulty}))
+				.html()
 				.end()
 				.find('#modalTitle')
 				.html('Congratulations')
@@ -44,7 +41,7 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 				.html(_board.timer.toString())
 				.end()
 				.find('#resultsBestTime')
-				.html(_scores.getBestTime({difficulty: _board.boardOptions.difficulty}))
+				.html()
 				.end()
 				.find('#modalTitle')
 				.html('Better luck next time!')
