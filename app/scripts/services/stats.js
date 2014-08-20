@@ -1,5 +1,5 @@
 
-define(['scripts/services/pubsub'], function(pubsubService) {
+define(['scripts/services/pubsub', 'scripts/viewmodels/score'], function(pubsubService, ScoreViewModel) {
 	var instance;
 
 	function singletonConstructor(options) {

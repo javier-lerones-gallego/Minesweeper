@@ -10,7 +10,7 @@ define(['scripts/services/util'], function(toolsService) {
 		this.boardClearBonus = constructor.boardClearBonus || 0;
 		this.minesDisarmedBonus = constructor.minesDisarmedBonus || 0;
 
-	}
+	};
 
 	ScoreViewModel.prototype.toString = function() {
 		return toolsService.printTimeFromSeconds(this.time, this.time > 3600 ? true : false);
