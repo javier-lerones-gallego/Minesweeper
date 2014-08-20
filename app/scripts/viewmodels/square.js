@@ -169,6 +169,11 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 	}
 
 	SquareViewModel.prototype.dispose = function() {
+		this.state = null;
+		this.neighbours = null;
+		this.bombCount = null;
+		this.id = null;
+		this.neighbouringFlagCount = null;
 		// Events triggered by the UI
 		pubsubService.unsubscribe('ui.square.mousedown', this.square_on_square_mousedown);
 		pubsubService.unsubscribe('ui.square.mouseup', this.square_on_square_mouseup);
