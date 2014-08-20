@@ -42,6 +42,7 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 				.end()
 				.find('#modalTitle')
 				.html('Better luck next time!')
+				.end()
 				.modal({ keyboard: false, backdrop: 'static'});
 		});
 
