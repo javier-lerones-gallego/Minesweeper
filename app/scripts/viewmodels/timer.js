@@ -13,8 +13,9 @@ define(['scripts/services/util', 'scripts/services/pubsub'], function(utilServic
 		this.stopped = true;
 
 		this._tick = function() {
-			if(self._stopped) {
+			if(self.stopped) {
 				clearInterval(self._timerId);
+				self._timerId = null;
 			} else if(!self.paused) {
 				self.seconds += 1;
 				pubsubService.publish('timer.tick', { seconds: self.seconds, time: self.toString() });

@@ -99,9 +99,11 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 			// YES
 			if($('#confirmModal').data('event') === 'gohome') {
 				_board.reset();
+				_board.timer.stop();
 				showHome();
 			} else if($('#confirmModal').data('event') === 'newgame') {
 				_board.reset();
+				_board.timer.stop();
 				// New game of each difficulty
 				if(_board.isEasy()) newEasy();
 				if(_board.isMedium()) newMedium();
@@ -118,11 +120,13 @@ define(['jquery', 'scripts/viewmodels/board', 'scripts/services/ui', 'scripts/vi
 
 		$('#resultsModal').find('button.btn-primary').on('click', function() {
 			_board.reset();
+			_board.timer.stop();
 			showHome();
 			$('#resultsModal').modal('hide');
 		});
 		$('#resultsModal').find('button.btn-default').on('click', function() {
 			_board.reset();
+			_board.timer.stop();
 			// New game of each difficulty
 			if(_board.isEasy()) newEasy();
 			if(_board.isMedium()) newMedium();

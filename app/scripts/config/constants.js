@@ -18,8 +18,8 @@ define([], function() {
 		},
 		expert: {
 			difficulty: 'Expert',
-			rows: 30,
-			columns: 16,
+			rows: 16,
+			columns: 30,
 			mines: 99
 		},
 		custom: {

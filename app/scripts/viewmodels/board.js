@@ -123,7 +123,7 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			this.squares = this._create_squares( toolsService.getRandomMines( this.boardOptions ) );
 
 			// Trigger onminecountchange so the UI refreshes on load
-			pubsubService.publish('game.flag.change', { count: this.boardOptions.mines - this.flags });
+			pubsubService.publish('flag.change', { count: this.boardOptions.mines - this.flags });
 		}
 	};
 
