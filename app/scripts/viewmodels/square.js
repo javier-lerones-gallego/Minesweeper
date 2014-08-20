@@ -8,6 +8,7 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 		this.neighbours = constructor_arguments.neighbours;
 		this.bombCount = 0; // -1 = mine, 0..8 number of mines around
 		this.id = constructor_arguments.id;
+		this.neighbouringFlagCount = 0;
 
 
 		this.on_square_mousedown = function(args) {
@@ -35,15 +36,12 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 					}
 				} else if(args.event.button === 2) {
 					if(!self.isRevealed()) {
-						if(!self.isRevealed()) {
-							// if active, switch to flag
-							if(self.isActive()) self.setFlag();
-							// if flag, switch to question
-							else if(self.isFlag()) self.setQuestion();
-							// if question, switch to active
-							else if(self.isQuestion()) self.setActive();
-						};
-						pubsubService.publish('ui.square.refresh', { id: self.id });
+						// if active, switch to flag
+						if(self.isActive()) self.setFlag();
+						// if flag, switch to question
+						else if(self.isFlag()) self.setQuestion();
+						// if question, switch to active
+						else if(self.isQuestion()) self.setActive();
 					} else if(self.bombCount > 0) {
 						// highlight the neighbours
 						pubsubService.publish('square.neighbours.unhighlight', { id: self.id });
@@ -51,7 +49,7 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 				}
 
 				// Trigger the clicked event, only used to start the timer
-				pubsubService.publish('board.square.clicked');
+				pubsubService.publish('square.clicked');
 
 				// Remove the focus to avoid the shadowed blue that stays after clicking
 				pubsubService.publish('square.remove.focus', { id: self.id });
@@ -63,9 +61,8 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 				if(self.isRevealed() && !self.isMine() && self.hasMineAround()) {
 					// Will trigger a special reveal in all neighbours if there is the same amount of flags in them as the number of mines around it.
 					// If a neighbour with a mine wasn't covered with a flag is revealed, it will detonate the mine
-					var totalFlagsAround = self._neighbouring_flag_count();
-					if(totalFlagsAround === self.bombCount) {
-						pubsubService.publish('square.click.active.unflagged', { id: self.id });
+					if(self.neighbouringFlagCount === self.bombCount) {
+						pubsubService.publish('square.neighbours.click', { id: self.id });
 					}
 				}
 			}
@@ -73,13 +70,15 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 
 		this.on_square_neighbours_highlight = function(args) {
 			if(self.neighbours[args.id]) {
-				pubsubService.publish('ui.square.highlight', { id: self.id });
+				if(self.isActive())
+					pubsubService.publish('ui.square.highlight', { id: self.id });
 			}
 		};
 
 		this.on_square_neighbours_unhighlight = function(args) {
 			if(self.neighbours[args.id]) {
-				pubsubService.publish('ui.square.unhighlight', { id: self.id });
+				if(self.isActive())
+					pubsubService.publish('ui.square.unhighlight', { id: self.id });
 			}
 		};
 
@@ -109,6 +108,31 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 			}
 		};
 
+		this.on_square_flagged = function(args) {
+			if(self.neighbours[args.id]) {
+				self.neighbouringFlagCount += 1;
+			}
+		};
+
+		this.on_square_questioned = function(args) {
+			if(self.neighbours[args.id]) {
+				self.neighbouringFlagCount -= 1;
+			}
+		};
+
+		this.on_square_neighbours_click = function(args) {
+			if(self.neighbours[args.id]) {
+				if(self.isActive() && !self.isMine()) {
+					// if not a bomb, reveal it and trigger the neighbour reveal
+					self.reveal();
+				} else if(self.isActive() && self.isMine()) {
+					// Game Over, notify the board
+					pubsubService.publish('board.mine.exploded');
+					pubsubService.publish('ui.square.show.mine', { id: self.id });
+				}
+			}
+		};
+
 		this.get_debug_content = function() {
 			if(this.isMine()) {
 				return '*';
@@ -123,20 +147,23 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 		//
 
 		(function() {
-
 			// First: Create the subscriptions
+			//
+			// Events triggered by the UI
 			pubsubService.subscribe('ui.square.mousedown', self.on_square_mousedown);
 			pubsubService.subscribe('ui.square.mouseup', self.on_square_mouseup);
 			pubsubService.subscribe('ui.square.dblclick', self.on_square_dblclick);
-
+			// Events triggered by other objects in the application
 			pubsubService.subscribe('square.show.mine', self.on_square_show_mine);
 			pubsubService.subscribe('square.disable', self.on_square_disable);
-
+			// Events triggered by other squares
 			pubsubService.subscribe('square.neighbours.highlight', self.on_square_neighbours_highlight);
 			pubsubService.subscribe('square.neighbours.unhighlight', self.on_square_neighbours_unhighlight);
 			pubsubService.subscribe('square.neighbours.reveal', self.on_square_neighbours_reveal);
-
 			pubsubService.subscribe('square.neighbours.add.mine', self.on_square_neighbours_add_mine);
+			pubsubService.subscribe('square.flagged', self.on_square_flagged);
+			pubsubService.subscribe('square.questioned', self.on_square_questioned);
+			pubsubService.subscribe('square.neighbours.click', self.on_square_neighbours_click);
 		}());
 
 
@@ -160,6 +187,9 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 				// Mark it as revealed so the neighbours events don't come back here
 				this.setRevealed();
 			}
+
+			// Trigger the square has been revealed event for everybody listening
+			pubsubService.publish('square.revealed');
 		}
 	};
 
@@ -203,21 +233,21 @@ define(['scripts/services/pubsub', 'scripts/services/util'], function(pubsubServ
 
 	SquareViewModel.prototype.setFlag = function() {
 		this.state = 'flag';
-		pubsubService.publish('board.flag.added');
+		pubsubService.publish('square.flagged', { id: this.id });
 	};
 
 	SquareViewModel.prototype.setQuestion = function() {
 		this.state = 'question';
-		pubsubService.publish('board.flag.removed');
+		pubsubService.publish('square.questioned', { id: this.id });
 	};
 
 	SquareViewModel.prototype.setActive = function() {
 		this.state = 'active';
+		pubsubService.publish('square.activated', { id: this.id });
 	};
 
 	SquareViewModel.prototype.setRevealed = function() {
 		this.state = 'revealed';
-		pubsubService.publish('board.square.revealed');
 	};
 
 	SquareViewModel.prototype.isEmpty = function() {

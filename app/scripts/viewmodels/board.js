@@ -23,7 +23,7 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 				this.squares.push(new SquareViewModel({ id: index, neighbours: toolsService.calculateNeighbours(index, this.boardOptions) }));
 			};
 
-			// Set the mines
+			// Set the mines (this allows the mine count to be updated on each neighbour)
 			mines.forEach(function(mineIndex) {
 				self.squares[mineIndex].setMine();
 			});
@@ -48,26 +48,10 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			pubsubService.publish('square.disable');
 		};
 
-
-
-
-
-
-/*
-
-
-
-
 		this.on_square_revealed = function() {
+			self.revealed += 1;
 			if(self._is_victory()) {
 				pubsubService.publish('game.won');
-			}
-		};
-
-		this.on_square_clicked = function(event, args) {
-			if(self.firstClick) {
-				self.firstClick = false;
-				self.timer.start();
 			}
 		};
 
@@ -77,19 +61,25 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			return this.revealed === (this.boardOptions.rows * this.boardOptions.columns) - this.boardOptions.mines;
 		};
 
-*/
+		this.on_square_clicked = function(event, args) {
+			if(self.firstClick) {
+				self.firstClick = false;
+				self.timer.start();
+			}
+		};
+
+
 
 		//
 		// Pretty much this is the constructor logic
 		//
 		// First: Create the subscriptions to all the relevan messages
-		pubsubService.subscribe('board.flag.added', this.on_flag_added);
-		pubsubService.subscribe('board.flag.removed', this.on_flag_removed);
+		pubsubService.subscribe('square.flagged', this.on_flag_added);
+		pubsubService.subscribe('square.questioned', this.on_flag_removed);
 		pubsubService.subscribe('board.mine.exploded', this.on_mine_exploded);
 
-		//pubsubService.subscribe('board.square.revealed', this.on_square_revealed);
-		//pubsubService.subscribe('board.square.clicked', this.on_square_clicked);
-		// Second: ?
+		pubsubService.subscribe('square.revealed', this.on_square_revealed);
+		pubsubService.subscribe('square.clicked', this.on_square_clicked);
 	};
 
 	BoardViewModel.prototype.dispose = function() {

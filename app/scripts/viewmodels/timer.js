@@ -4,6 +4,8 @@ define(['scripts/services/util', 'scripts/services/pubsub'], function(utilServic
 		// This holds the number of seconds this timer will run through.
 		// If we set it with set() the timer will be a countdown,
 		// If starts from 0 it will count forward
+		var self = this;
+		
 		this.seconds = 0;
 		this._timerId;
 
@@ -11,11 +13,11 @@ define(['scripts/services/util', 'scripts/services/pubsub'], function(utilServic
 		this.stopped = true;
 
 		this._tick = function() {
-			if(this._stopped) {
-				clearInterval(this._timerId);
-			} else if(!this.paused) {
-				this.seconds += 1;
-				pubsubService.publish('timer.tick', { seconds: this.seconds, time: this.toString() });
+			if(self._stopped) {
+				clearInterval(self._timerId);
+			} else if(!self.paused) {
+				self.seconds += 1;
+				pubsubService.publish('timer.tick', { seconds: self.seconds, time: self.toString() });
 			}
 		};
 	};

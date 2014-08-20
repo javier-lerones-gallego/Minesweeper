@@ -97,24 +97,30 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/config/definitions'], func
 			}
 		};
 
-		self.on_refresh = function(args) {
+		self.on_square_flagged = function(args) {
 			if(self.squares[args.id]) {
-				if(self.squares[args.id].isActive()) {
-					// Remove the <i> inside
-					self.squares[args.id].find('i').remove();
-					// Change class to btn-primary
-					self.squares[args.id].removeClass('btn-danger btn-default btn-warning btn-success disabled').addClass('btn-primary');
-				}  else if(self.squares[args.id].isFlag()) {
-					// Add the <i> inside // <i class="fa fa-flag"></i>
-					// Change class to btn-warning
-					var flag = $('<i>').addClass('fa fa-flag');
-					self.squares[args.id].removeClass('btn-danger btn-default btn-primary btn-success disabled').append(flag).addClass('btn-warning');
-				}  else if(self._state === 'question') {
-					// Change the <i> inside to be question
-					self.squares[args.id].find('i').removeClass('fa-flag').addClass('fa-question-circle');
-					// Change class to btn-warning
-					self.squares[args.id].removeClass('btn-danger btn-default btn-primary btn-warning disabled').addClass('btn-success');
-				}
+				// Add the <i> inside // <i class="fa fa-flag"></i>
+				// Change class to btn-warning
+				var flag = $('<i>').addClass('fa fa-flag');
+				self.squares[args.id].removeClass('btn-danger btn-default btn-primary btn-success disabled').append(flag).addClass('btn-warning');
+			}
+		};
+
+		self.on_square_questioned = function(args) {
+			if(self.squares[args.id]) {
+				// Change the <i> inside to be question
+				self.squares[args.id].find('i').removeClass('fa-flag').addClass('fa-question-circle');
+				// Change class to btn-warning
+				self.squares[args.id].removeClass('btn-danger btn-default btn-primary btn-warning disabled').addClass('btn-success');
+			}
+		};
+
+		self.on_square_activated = function(args) {
+			if(self.squares[args.id]) {
+				// Remove the <i> inside
+				self.squares[args.id].find('i').remove();
+				// Change class to btn-primary
+				self.squares[args.id].removeClass('btn-danger btn-default btn-warning btn-success disabled').addClass('btn-primary');
 			}
 		};
 
@@ -153,7 +159,9 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/config/definitions'], func
 		pubsubService.subscribe('square.remove.focus', self.on_remove_focus);
 		pubsubService.subscribe('ui.square.show.mine', self.on_show_mine);
 
-		pubsubService.subscribe('ui.square.refresh', self.on_refresh);
+		pubsubService.subscribe('square.flagged', self.on_square_flagged);
+		pubsubService.subscribe('square.questioned', self.on_square_questioned);
+		pubsubService.subscribe('square.activated', self.on_square_activated);
 
 		pubsubService.subscribe('ui.square.highlight', self.on_square_highlight);
 		pubsubService.subscribe('ui.square.unhighlight', self.on_square_unhighlight);
