@@ -1,4 +1,4 @@
-define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/services/pubsub', 'scripts/config/constants', 'scripts/services/util'], function(SquareViewModel, TimerViewModel, pubsubService, constantsService, utilService) {
+define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/services/pubsub', 'scripts/config/constants', 'scripts/services/util'], function(SquareViewModel, TimerViewModel, pubsubService, constantsService, toolsService) {
 
 	function BoardViewModel(constructor_arguments) {
 		var self = this;
@@ -13,43 +13,6 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 		// And another one with the number of revealed squares on the board
 		this.revealed = 0;
 
-		// Private functions
-		this._disable = function() {
-			this.squares.forEach(function(square) {
-				square.disable();
-			});
-		};
-
-		this._get_random_mines = function() {
-			// The array to stored the indexes
-			var mines = [];
-			// Current attempts
-			var attempts = 0;
-			// Current number of mines added
-			var added = 0;
-			// Do either until we randomize the total number of mines,
-			// or until we go over the maximum number of attempts
-			while(added < this.boardOptions.mines && attempts < constantsService.MAX_ATTEMPTS_RANDOM_MINE_INDEX) {
-				// Get a random index
-				var newIndex = utilService.randomNumber(0, (this.boardOptions.rows * this.boardOptions.columns) - 1);
-				// If it doesn't exist, add it to the indexes
-				if(!mines[newIndex]) {
-					mines[newIndex] = newIndex; // Keep the value too for easier lookups
-					added += 1;
-				}
-				attempts += 1; // Because having an operator just for the number 1 case is STUPID
-			}
-			// Show an error message if attempts went over the max
-			if(attempts >= constantsService.MAX_ATTEMPTS_RANDOM_MINE_INDEX) {
-				throw new Error("Went over the maximum number of attempts allowed to calculate random positions for the mines.");
-			}
-			// Return the indexes
-			return mines;
-		};
-
-		this._show_all_mines = function() {
-			pubsubService.publish('ui.show.mines');
-		};
 
 		this._create_squares = function(mines) {
 			// Now generate the squares, and if the index has a bomb, mark it as bomb
@@ -57,22 +20,15 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			// this.boardOptions.length: length of each row
 			for(var index = 0, last = this.boardOptions.rows * this.boardOptions.columns; index < last; index++) {
 				// Add the square to the squares array
-				this.squares.push(new SquareViewModel({ id: index, isMine: mines[index] }));
+				this.squares.push(new SquareViewModel({ id: index, neighbours: toolsService.calculateNeighbours(index, this.boardOptions) }));
 			};
 
-			// Right after the square objects are created, find the neighbour squares for each one
-			this._assign_neighbours();
-		};
-
-		this._assign_neighbours = function() {
-			var self = this;
-			// traverse the board one more time and add the neighbours to each square
-			this.squares.forEach(function(s, si) {
-				utilService.calculateNeighbours(si, self.boardOptions).forEach(function(n, ni) {
-					self.squares[si].addNeighbour(self.squares[n]);
-				});
+			// Set the mines
+			mines.forEach(function(mineIndex) {
+				self.squares[mineIndex].setMine();
 			});
 		};
+
 
 		// Event Handlers and Listeners
 		this.on_flag_added = function() {
@@ -87,10 +43,20 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			// Trigger the ongamelost event
 			pubsubService.publish('game.lost');
 			// Show all the mines
-			self._show_all_mines();
+			pubsubService.publish('square.show.mine');
 			// Disable all squares
-			self._disable();
+			pubsubService.publish('square.disable');
 		};
+
+
+
+
+
+
+/*
+
+
+
 
 		this.on_square_revealed = function() {
 			if(self._is_victory()) {
@@ -111,15 +77,18 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			return this.revealed === (this.boardOptions.rows * this.boardOptions.columns) - this.boardOptions.mines;
 		};
 
+*/
+
 		//
 		// Pretty much this is the constructor logic
 		//
-		// First: Create the subscriptions
+		// First: Create the subscriptions to all the relevan messages
 		pubsubService.subscribe('board.flag.added', this.on_flag_added);
 		pubsubService.subscribe('board.flag.removed', this.on_flag_removed);
 		pubsubService.subscribe('board.mine.exploded', this.on_mine_exploded);
-		pubsubService.subscribe('board.square.revealed', this.on_square_revealed);
-		pubsubService.subscribe('board.square.clicked', this.on_square_clicked);
+
+		//pubsubService.subscribe('board.square.revealed', this.on_square_revealed);
+		//pubsubService.subscribe('board.square.clicked', this.on_square_clicked);
 		// Second: ?
 	};
 
@@ -152,7 +121,8 @@ define(['scripts/viewmodels/square', 'scripts/viewmodels/timer', 'scripts/servic
 			throw new Error("Oops, can't create more mines than squares in the board.")
 		} else {
 			// Good to go
-			this._create_squares( this._get_random_mines( this.boardOptions ) );
+			this._create_squares( toolsService.getRandomMines( this.boardOptions ) );
+
 			// Trigger onminecountchange so the UI refreshes on load
 			pubsubService.publish('game.flag.change', { count: this.boardOptions.mines - this.flags });
 		}

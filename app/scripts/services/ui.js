@@ -124,7 +124,7 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/config/definitions'], func
 			}
 		};
 
-		self.on_reveal_neighbour = function(args) {
+		self.on_reveal_count = function(args) {
 			if(self.squares[args.id]) {
 				var $bomb_count_element = $('<span>').addClass('_' + args.count).html(args.count);
 				self.squares[args.id].removeClass('btn-primary btn-default btn-warning btn-success btn-danger').addClass('btn-default active').html($bomb_count_element);
@@ -137,13 +137,30 @@ define(['jquery', 'scripts/services/pubsub', 'scripts/config/definitions'], func
 			}
 		};
 
-		pubsubService.subscribe('square.disable', self.on_disable);
+		self.on_square_highlight = function(args) {
+			if(self.squares[args.id]) {
+				self.squares[args.id].addClass('active');
+			}
+		};
+
+		self.on_square_unhighlight = function(args) {
+			if(self.squares[args.id]) {
+				self.squares[args.id].removeClass('active');
+			}
+		};
+
+		pubsubService.subscribe('ui.square.disable', self.on_disable);
 		pubsubService.subscribe('square.remove.focus', self.on_remove_focus);
-		pubsubService.subscribe('square.show.mine', self.on_show_mine);
-		pubsubService.subscribe('square.refresh', self.on_refresh);
-		pubsubService.subscribe('square.reveal.empty', self.on_reveal_empty);
-		pubsubService.subscribe('square.reveal.neighbour', self.on_reveal_neighbour);
-		pubsubService.subscribe('square.reveal.mine', self.on_reveal_mine);
+		pubsubService.subscribe('ui.square.show.mine', self.on_show_mine);
+
+		pubsubService.subscribe('ui.square.refresh', self.on_refresh);
+
+		pubsubService.subscribe('ui.square.highlight', self.on_square_highlight);
+		pubsubService.subscribe('ui.square.unhighlight', self.on_square_unhighlight);
+
+		pubsubService.subscribe('ui.square.reveal.empty', self.on_reveal_empty);
+		pubsubService.subscribe('ui.square.reveal.count', self.on_reveal_count);
+		pubsubService.subscribe('ui.square.reveal.mine', self.on_reveal_mine);
 	};
 
 	return {
