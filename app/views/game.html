@@ -1,4 +1,13 @@
 <div class="container">
-    <h4><a href="/">Games</a></h4> :: <h4></h4>
+    <h4><a href="/">Games</a> >> {{ difficulty }}</h4>
 
+    <div class="board" ng-class="difficulty">
+        <square ng-repeat="square in squares" is-mine="square.isMine"></square>
+        <div class="clearfix"></div>
+    </div>
+
+    <p>
+        <button id="gohome" type="button" class="btn btn-default">Home</button>
+        <button id="newgame" type="button" class="btn btn-default">New Game</button>
+    </p>
 </div>
