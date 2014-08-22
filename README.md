@@ -1,4 +1,0 @@
-Minesweeper
-===========
-
-Minesweeper
