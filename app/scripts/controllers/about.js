@@ -10,6 +10,6 @@
 angular.module('MineSweeperApp')
     .controller('AboutCtrl', function ($scope) {
 
-
+        $scope.foo = 'foo';
 
     });

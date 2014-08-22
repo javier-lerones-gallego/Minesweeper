@@ -12,18 +12,31 @@ angular.module('MineSweeperApp')
 
         $scope.difficulty = $routeParams.difficulty;
 
-        $scope.squares = [];
+        switch($scope.difficulty) {
+            case 'easy':
+                $scope.rows = 9;
+                $scope.columns = 9;
+                $scope.mines = 10;
+                break;
+            case 'medium':
+                $scope.rows = 16;
+                $scope.columns = 16;
+                $scope.mines = 40;
+                break;
+            case 'expert':
+                $scope.rows = 16;
+                $scope.columns = 30;
+                $scope.mines = 99;
+                break;
+        }
 
-        if($routeParams.difficulty === 'easy') {
-            for(var i = 0, l = 81; i < l; i++) {
-                $scope.squares.push(i);
-            }
-        }
-        else if($routeParams.difficulty === 'medium') {
-            for(var i = 0, l = 256; i < l; i++) {
-                $scope.squares.push(i);
-            }
-        }
+        $scope.newGame = function() {
+
+        };
+
+        $scope.goHome = function() {
+            $location.path( "/" );
+        };
 
 
     });

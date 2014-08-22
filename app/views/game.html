@@ -1,13 +1,10 @@
-<div class="container">
-    <h4><a href="/">Games</a> >> {{ difficulty }}</h4>
+<div class="container-fluid">
+    <h4><a href="/">Games</a> &raquo; {{ difficulty | titleCase }}</h4>
 
-    <div class="board" ng-class="difficulty">
-        <square ng-repeat="square in squares" is-mine="square.isMine"></square>
-        <div class="clearfix"></div>
-    </div>
+    <board rows="{{ rows }}" columns="{{ columns }}" mines="{{ mines }}" difficulty="{{ difficulty }}"></board>
 
     <p>
-        <button id="gohome" type="button" class="btn btn-default">Home</button>
-        <button id="newgame" type="button" class="btn btn-default">New Game</button>
+        <button id="gohome" type="button" class="btn btn-default" ng-click="goHome()">Home</button>
+        <button id="newgame" type="button" class="btn btn-default" ng-click="newGame()">New Game</button>
     </p>
 </div>
