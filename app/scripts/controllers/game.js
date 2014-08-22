@@ -2,13 +2,13 @@
 
 /**
  * @ngdoc function
- * @name MineSweeperApp.controller:AboutCtrl
+ * @name MineSweeperApp.controller:GameCtrl
  * @description
- * # AboutCtrl
+ * # GameCtrl
  * Controller of the MineSweeperApp
  */
 angular.module('MineSweeperApp')
-    .controller('AboutCtrl', function ($scope) {
+    .controller('GameCtrl', function ($scope, $location) {
 
 
 
