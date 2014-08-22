@@ -12,7 +12,7 @@ angular.module('MineSweeperApp')
             templateUrl: 'views/square.html',
             restrict: 'E',
             scope: {
-                
+
             },
             link: function postLink(scope, element, attrs) {
 
