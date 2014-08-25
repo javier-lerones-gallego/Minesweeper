@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
   </head>
-  <body ng-app="MineSweeperApp">
+  <body ng-app="MineSweeperApp" disable-context-menu>
     <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -51,7 +51,7 @@
     <script src="bower_components/angular-animate/angular-animate.js"></script>
     <script src="bower_components/angular-touch/angular-touch.js"></script>
     <script src="bower_components/angular-route/angular-route.js"></script>
-    <script src="bower_components/ui-bootstrap/dist/ui-bootstrap-tpls-0.11.0.min.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -62,6 +62,10 @@
         <script src="scripts/controllers/game.js"></script>
         <script src="scripts/controllers/dialog.js"></script>
         <script src="scripts/directives/square.js"></script>
+        <script src="scripts/filters/titlecase.js"></script>
+        <script src="scripts/services/game.js"></script>
+        <script src="scripts/directives/board.js"></script>
+        <script src="scripts/directives/disablecontextmenu.js"></script>
         <!-- endbuild -->
 </body>
 </html>
