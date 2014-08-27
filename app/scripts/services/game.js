@@ -34,7 +34,50 @@ angular.module('MineSweeperApp')
             return mines;
         };
 
-        this.generate = function(options) {
+        this.getBombCount = function(index, mines, columns) {
+            var bombs = 0;
 
-        }
+            for(var mineIndex in mines) {
+                if(index !== mineIndex && this.isNeighbour(index, mineIndex, columns)) {
+                    bombs += 1;
+                }
+            }
+
+            return bombs;
+        };
+
+        this.getSquares = function(options) {
+            var mines = this.getRandomMines(options);
+            var squares = [];
+
+            for(var i = 0, l = (options.rows * options.columns); i < l; i++) {
+                squares.push({
+                    id: i,
+                    isMine: mines[i] ? true : false,
+                    bombs: this.getBombCount(i, mines, options.columns)
+                });
+            }
+
+            return squares;
+        };
+
+        this.isNeighbour = function(index, target, columns) {
+            // Calculate the distance between two points with Pythagoras
+            var source = this.toCoordinates(index, columns);
+            var dest = this.toCoordinates(target, columns);
+
+            var distance = Math.round(Math.sqrt( Math.pow( (dest.x - source.x), 2 ) + Math.pow( (dest.y - source.y) , 2) ));
+
+            return distance === 1;
+        };
+
+        this.toCoordinates = function(index, columns) {
+            var coordinates = {};
+
+            coordinates.x = Math.floor(index / columns);
+            coordinates.y = index % columns;
+
+            return coordinates;
+        };
+
     });

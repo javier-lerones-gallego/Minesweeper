@@ -35,34 +35,25 @@ angular.module('MineSweeperApp')
             $location.path( "/game/".concat(difficulty.toLowerCase()) );
         };
 
-        $scope.dialogConfig = {
-            title: 'Are you sure?',
-            body: 'Your progress will be lost.',
-            buttons: {
-                yes: 'Yes',
-                cancel: 'Cancel'
-            }
-        };
-
         $scope.showCustomModal = function() {
             var modalInstance = $modal.open({
-                templateUrl: 'views/dialog.html',
-                controller: 'DialogCtrl',
-                size: 'sm',
+                templateUrl: 'views/custom.modal.html',
+                controller: 'CustomModalCtrl',
+                size: 'md',
                 resolve: {
-                    dialogConfig: function () {
-                        return $scope.dialogConfig;
+                    formOptions: function () {
+                        return { rows: 9, columns: 9, mines: 10 };
                     }
                 }
             });
 
             modalInstance.result.then(
-                function () {
+                function (gameOptions) {
                     // Dialog accepted, clicked on Yes
-
+                    $log.log(gameOptions);
                 },
                 function () {
-                    $log.info('Dialog dismissed at: ' + new Date());
+                    // Cancelled the modal
                 });
         };
 

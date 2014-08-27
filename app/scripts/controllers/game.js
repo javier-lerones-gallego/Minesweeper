@@ -30,9 +30,10 @@ angular.module('MineSweeperApp')
                 break;
         }
 
-        $scope.newGame = function() {
+        $scope.flags = $scope.mines;
 
-        };
+        // The board directive will populate this bi-directional parameter, it just needs to exist here
+        $scope.boardController = {};
 
         $scope.goHome = function() {
             $location.path( "/" );

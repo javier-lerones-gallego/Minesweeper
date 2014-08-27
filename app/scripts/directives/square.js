@@ -7,23 +7,27 @@
  * # Square
  */
 angular.module('MineSweeperApp')
-    .directive('square', function ($log) {
+    .directive('square', function ($pubsubService, $gameService, $log) {
         return {
             templateUrl: 'views/square.html',
             restrict: 'EA',
+            transclude: true,
             require: '^board',
             scope: {
                 id: '@id',
-                mine: '@isMine'
+                mine: '@isMine',
+                bombs: '@neighbourMines'
             },
             link: function postLink(scope, element, attrs, boardController) {
                 // Variables
                 scope.state = 'active';
-                scope.bombCount = 0;
+                scope.bombCount = parseInt(scope.bombs, 10);
+                scope.showCount = false;
 
                 // Class names for the UI
                 scope.iconCss = '';
                 scope.buttonCss = 'btn-primary';
+                scope.spanCss = '_'.concat(scope.bombCount);
 
                 // Getters
                 scope.isRevealed = function() {
@@ -73,14 +77,27 @@ angular.module('MineSweeperApp')
                     scope.buttonCss = 'btn-danger';
                 };
 
+                // Listen to square.reveal event triggered by other squares
+                $pubsubService.on('square.reveal', function(event, data) {
+                    // If data.id is not my id check if data.id is a neighbour or not
+                    if(data.id !== scope.id) {
+                        if($gameService.isNeighbour(scope.id, data.id, boardController.columns)) {
+                            scope.reveal();
+                        }
+                    }
+                }, scope);
+
+
                 scope.reveal = function() {
                     if(!scope.isRevealed() && !scope.isFlag() && !scope.isQuestion()) {
                         if(scope.isEmpty()) {
                             // Mark it as revealed BEFORE invoking the neighbours so the neighbours events don't come back here
                             scope.setRevealed();
-                            // TODO: Trigger the neighbouring squares reveal event
+                            // Trigger the neighbouring squares reveal event
+                            $pubsubService.send('square.reveal', { id: scope.id });
                         } else if(scope.hasMineAround()) {
                             // Mark it as revealed so the neighbours events don't come back here
+                            scope.showCount = true;
                             scope.setRevealed();
                         }
                     }

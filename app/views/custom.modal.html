@@ -1,0 +1,29 @@
+<div class="modal-header">
+    <h4 class="modal-title">New Custom Game</h4>
+</div>
+<div class="modal-body">
+    <form class="form-horizontal" name="container.customModalForm" role="form">
+        <div class="form-group">
+            <label for="inputRows" class="col-sm-2 control-label">Rows</label>
+            <div class="col-sm-10">
+                <input id="inputRows" name="rows" type="number" class="form-control" ng-model="container.rows" min="2" max="50" ng-minlength="2" ng-maxlength="50" ng-change="validate()">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputColumns" class="col-sm-2 control-label">Columns</label>
+            <div class="col-sm-10">
+                <input id="inputColumns" name="columns" type="number" class="form-control" ng-model="container.columns" min="2" max="50" ng-minlength="2" ng-maxlength="50" ng-change="validate()">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputMines" class="col-sm-2 control-label">Mines</label>
+            <div class="col-sm-10">
+                <input id="inputMines" name="mines" type="number" class="form-control" ng-model="container.mines" min="1" max="999" ng-minlength="1" ng-maxlength="999" ng-change="validate()">
+            </div>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="ok()">Create</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+</div>

@@ -1,4 +1,4 @@
 <div class="board" ng-class="difficulty">
-    <square ng-repeat="square in squares" id="{{ square.id }}" is-mine="{{ square.isMine }}"></square>
+    <square ng-repeat="square in squares" id="{{ square.id }}" is-mine="{{ square.isMine }}" neighbour-mines="{{ square.bombs }}"></square>
     <div class="clearfix"></div>
 </div>
