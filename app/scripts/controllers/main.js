@@ -28,6 +28,9 @@ angular.module('MineSweeperApp')
                 rows: 16,
                 columns: 30,
                 mines: 99
+            },
+            {
+                difficulty: 'Custom'
             }
         ];
 
@@ -35,26 +38,5 @@ angular.module('MineSweeperApp')
             $location.path( "/game/".concat(difficulty.toLowerCase()) );
         };
 
-        $scope.showCustomModal = function() {
-            var modalInstance = $modal.open({
-                templateUrl: 'views/custom.modal.html',
-                controller: 'CustomModalCtrl',
-                size: 'md',
-                resolve: {
-                    formOptions: function () {
-                        return { rows: 9, columns: 9, mines: 10 };
-                    }
-                }
-            });
-
-            modalInstance.result.then(
-                function (gameOptions) {
-                    // Dialog accepted, clicked on Yes
-                    $log.log(gameOptions);
-                },
-                function () {
-                    // Cancelled the modal
-                });
-        };
 
     });
