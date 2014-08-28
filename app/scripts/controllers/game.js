@@ -28,6 +28,11 @@ angular.module('MineSweeperApp')
                 $scope.columns = 30;
                 $scope.mines = 99;
                 break;
+            case 'custom':
+                $scope.rows = 9;
+                $scope.columns = 9;
+                $scope.mines = 10;
+                break;
         }
 
         $scope.flags = $scope.mines;

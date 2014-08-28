@@ -21,7 +21,7 @@ angular.module('MineSweeperApp')
             },
             controller: function postLink($scope) {
                 $scope.firstClick = true;
-                $scope.squares = $gameService.getSquares({ rows: $scope.rows, columns: $scope.columns, mines: $scope.mines });
+                $scope.squares = [];
 
                 // Expose rows and columns for the squares
                 this.rows = $scope.rows;
@@ -34,6 +34,15 @@ angular.module('MineSweeperApp')
                     $scope.firstClick = true;
                     $scope.squares = $gameService.getSquares({ rows: $scope.rows, columns: $scope.columns, mines: $scope.mines });
                 };
+
+                $scope.parentController.generate = function() {
+                    $log.log('Generating');
+                    $scope.squares = $gameService.getSquares({ rows: $scope.rows, columns: $scope.columns, mines: $scope.mines });
+                };
+
+                // if not custom difficulty, autogenerate the squares
+                if($scope.difficulty !== 'custom')
+                    $scope.parentController.generate();
             }
         };
     });
